@@ -3,15 +3,16 @@
 {% block title %}Dashboard Utama - SPK AHP{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <!-- Header Section -->
+<div class="container-fluid px-0">
+    <!-- Top Action & Title Header -->
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
         <div>
-            <h4 class="fw-bold mb-1 text-dark">
-                <i class="bi bi-speedometer2 text-primary me-2"></i> Dashboard SPK AHP
-            </h4>
-            <p class="text-muted small mb-0">
-                Studi Kasus: <strong>{{ decision['nama_keputusan'] }}</strong> &bull; {{ decision['tujuan'] }}
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <h4 class="fw-bold mb-0 text-dark">Dashboard Analisis Keputusan</h4>
+                <span class="badge bg-primary px-2 py-1" style="font-size: 0.72rem; letter-spacing: 0.04em;">METODE AHP</span>
+            </div>
+            <p class="text-secondary small mb-0">
+                Studi Kasus: <strong class="text-dark">{{ decision['nama_keputusan'] }}</strong> &mdash; {{ decision['tujuan'] }}
             </p>
         </div>
         <div class="d-flex gap-2">
@@ -21,67 +22,24 @@
             <a href="{{ url_for('perhitungan_index') }}" class="btn btn-primary btn-sm">
                 <i class="bi bi-calculator me-1"></i> Detail Perhitungan
             </a>
+            <a href="{{ url_for('laporan_index') }}" class="btn btn-light border btn-sm">
+                <i class="bi bi-file-earmark-text me-1"></i> Laporan Resmi
+            </a>
         </div>
     </div>
 
-    <!-- 7-STEP AHP WORKFLOW BANNER -->
-    <div class="card card-custom mb-4">
-        <div class="card-body py-3">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="small fw-bold text-uppercase text-secondary" style="letter-spacing: 0.05em;">
-                    <i class="bi bi-signpost-split me-1 text-primary"></i> Alur Kerja Sistem AHP
-                </span>
-                <span class="badge bg-light text-dark border">Standar Saaty (CR &le; 0.10)</span>
-            </div>
-            <div class="workflow-stepper">
-                <a href="{{ url_for('decisions_index') }}" class="step-item completed">
-                    <span class="step-number">1</span>
-                    <span>Tujuan Keputusan</span>
-                </a>
-                <i class="bi bi-chevron-right text-muted small"></i>
-                <a href="{{ url_for('kriteria_index') }}" class="step-item completed">
-                    <span class="step-number">2</span>
-                    <span>Kriteria & Alternatif</span>
-                </a>
-                <i class="bi bi-chevron-right text-muted small"></i>
-                <a href="{{ url_for('perbandingan_kriteria') }}" class="step-item completed">
-                    <span class="step-number">3</span>
-                    <span>Perbandingan Berpasangan</span>
-                </a>
-                <i class="bi bi-chevron-right text-muted small"></i>
-                <a href="{{ url_for('perhitungan_index') }}" class="step-item {% if calc['overall_consistent'] %}completed{% else %}active{% endif %}">
-                    <span class="step-number">4</span>
-                    <span>Bobot & Konsistensi</span>
-                </a>
-                <i class="bi bi-chevron-right text-muted small"></i>
-                <a href="{{ url_for('perhitungan_index') }}" class="step-item {% if calc['overall_consistent'] %}completed{% else %}active text-danger{% endif %}">
-                    <span class="step-number">5</span>
-                    <span>CR &le; 0.10?</span>
-                </a>
-                <i class="bi bi-chevron-right text-muted small"></i>
-                <a href="{{ url_for('perhitungan_index') }}" class="step-item completed">
-                    <span class="step-number">6</span>
-                    <span>Hitung Skor Akhir</span>
-                </a>
-                <i class="bi bi-chevron-right text-muted small"></i>
-                <a href="{{ url_for('perangkingan_index') }}" class="step-item active">
-                    <span class="step-number">7</span>
-                    <span>Hasil Perangkingan</span>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- 4 SUMMARY CARDS (MATCHING SECTION 2 BLUEPRINT) -->
+    <!-- 4 FLAT METRIC CARDS (SOLID COLOR ACCENTS) -->
     <div class="row g-3 mb-4">
         <!-- Card 1: Total Kriteria -->
         <div class="col-xl-3 col-sm-6">
-            <div class="card card-stat p-3 h-100">
+            <div class="card card-stat border-accent-primary p-3 h-100">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <span class="text-muted small fw-semibold text-uppercase">Total Kriteria</span>
-                        <h2 class="fw-bold mb-0 mt-1 text-dark">{{ calc['criteria']|length }}</h2>
-                        <small class="text-primary"><a href="{{ url_for('kriteria_index') }}" class="text-decoration-none">Kelola Kriteria &rarr;</a></small>
+                        <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Total Kriteria</span>
+                        <h2 class="fw-bold mb-1 mt-1 text-dark">{{ calc['criteria']|length }}</h2>
+                        <a href="{{ url_for('kriteria_index') }}" class="text-decoration-none small text-primary fw-semibold">
+                            Kelola Kriteria &rarr;
+                        </a>
                     </div>
                     <div class="stat-icon primary">
                         <i class="bi bi-list-check"></i>
@@ -92,15 +50,17 @@
 
         <!-- Card 2: Total Alternatif -->
         <div class="col-xl-3 col-sm-6">
-            <div class="card card-stat p-3 h-100">
+            <div class="card card-stat border-accent-info p-3 h-100">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <span class="text-muted small fw-semibold text-uppercase">Total Alternatif</span>
-                        <h2 class="fw-bold mb-0 mt-1 text-dark">{{ calc['alternatives']|length }}</h2>
-                        <small class="text-success"><a href="{{ url_for('alternatif_index') }}" class="text-decoration-none text-success">Kelola Alternatif &rarr;</a></small>
+                        <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Total Alternatif</span>
+                        <h2 class="fw-bold mb-1 mt-1 text-dark">{{ calc['alternatives']|length }}</h2>
+                        <a href="{{ url_for('alternatif_index') }}" class="text-decoration-none small text-info fw-semibold">
+                            Kelola Alternatif &rarr;
+                        </a>
                     </div>
-                    <div class="stat-icon success">
-                        <i class="bi bi-people"></i>
+                    <div class="stat-icon info">
+                        <i class="bi bi-people-fill"></i>
                     </div>
                 </div>
             </div>
@@ -108,10 +68,10 @@
 
         <!-- Card 3: Status Konsistensi -->
         <div class="col-xl-3 col-sm-6">
-            <div class="card card-stat p-3 h-100">
+            <div class="card card-stat {% if calc['criteria_ahp'] and calc['criteria_ahp']['is_consistent'] %}border-accent-success{% else %}border-accent-danger{% endif %} p-3 h-100">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <span class="text-muted small fw-semibold text-uppercase">Status Konsistensi</span>
+                        <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Status Konsistensi</span>
                         <div class="mt-1 mb-1">
                             {% if calc['criteria_ahp'] and calc['criteria_ahp']['is_consistent'] %}
                                 <span class="badge-consistent">
@@ -123,11 +83,11 @@
                                 </span>
                             {% endif %}
                         </div>
-                        <small class="text-muted">
-                            CR = {{ calc['criteria_ahp']['cr'] if calc['criteria_ahp'] else '0.0000' }} (Syarat &le; 0.10)
+                        <small class="text-secondary font-monospace d-block" style="font-size: 0.78rem;">
+                            CR = {{ calc['criteria_ahp']['cr'] if calc['criteria_ahp'] else '0.0000' }} (&le; 0.10)
                         </small>
                     </div>
-                    <div class="stat-icon {% if calc['criteria_ahp'] and calc['criteria_ahp']['is_consistent'] %}success{% else %}warning{% endif %}">
+                    <div class="stat-icon {% if calc['criteria_ahp'] and calc['criteria_ahp']['is_consistent'] %}success{% else %}danger{% endif %}">
                         <i class="bi bi-shield-check"></i>
                     </div>
                 </div>
@@ -136,19 +96,19 @@
 
         <!-- Card 4: Alternatif Terbaik -->
         <div class="col-xl-3 col-sm-6">
-            <div class="card card-stat p-3 h-100" style="background: linear-gradient(135deg, #fef3c7 0%, #ffffff 100%);">
+            <div class="card card-stat border-accent-warning p-3 h-100">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <span class="text-muted small fw-semibold text-uppercase">Alternatif Terbaik</span>
+                        <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Alternatif Terbaik</span>
                         {% if calc['best_alternative'] %}
-                            <h4 class="fw-bold mb-0 mt-1 text-warning-emphasis">
+                            <h5 class="fw-bold mb-1 mt-1 text-dark text-truncate" style="max-width: 170px;">
                                 {{ calc['best_alternative']['nama'] }}
-                            </h4>
-                            <small class="text-success fw-bold">
+                            </h5>
+                            <span class="small font-monospace text-success fw-bold">
                                 Skor: {{ calc['best_alternative']['skor_akhir'] }} ({{ (calc['best_alternative']['skor_akhir'] * 100)|round(2) }}%)
-                            </small>
+                            </span>
                         {% else %}
-                            <h5 class="fw-bold mb-0 mt-1 text-muted">Belum Dihitung</h5>
+                            <h5 class="fw-bold mb-1 mt-1 text-muted">Belum Dihitung</h5>
                             <small class="text-muted">-</small>
                         {% endif %}
                     </div>
@@ -160,48 +120,101 @@
         </div>
     </div>
 
-    <!-- MAIN DASHBOARD CONTENT: CHARTS & TABLES -->
-    <div class="row g-4">
-        <!-- Left: Bobot Prioritas Kriteria -->
+    <!-- ALUR KERJA AHP STEPPER -->
+    <div class="card card-custom mb-4">
+        <div class="card-body py-2 px-3">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2 pt-1">
+                <span class="small fw-bold text-uppercase text-secondary" style="font-size: 0.75rem; letter-spacing: 0.05em;">
+                    <i class="bi bi-signpost-split me-1 text-primary"></i> 7 Tahapan Alur Kerja Sistem AHP
+                </span>
+                <span class="badge bg-light text-dark border">Standar Rasio Konsistensi (CR &le; 0.10)</span>
+            </div>
+            <div class="workflow-stepper">
+                <a href="{{ url_for('decisions_index') }}" class="step-item completed">
+                    <span class="step-number"><i class="bi bi-check"></i></span>
+                    <span>1. Tujuan Keputusan</span>
+                </a>
+                <a href="{{ url_for('kriteria_index') }}" class="step-item completed">
+                    <span class="step-number"><i class="bi bi-check"></i></span>
+                    <span>2. Kriteria & Alternatif</span>
+                </a>
+                <a href="{{ url_for('perbandingan_kriteria') }}" class="step-item completed">
+                    <span class="step-number"><i class="bi bi-check"></i></span>
+                    <span>3. Perbandingan Pasangan</span>
+                </a>
+                <a href="{{ url_for('perhitungan_index') }}" class="step-item {% if calc['overall_consistent'] %}completed{% else %}active{% endif %}">
+                    <span class="step-number">{% if calc['overall_consistent'] %}<i class="bi bi-check"></i>{% else %}4{% endif %}</span>
+                    <span>4. Bobot Prioritas</span>
+                </a>
+                <a href="{{ url_for('perhitungan_index') }}" class="step-item {% if calc['overall_consistent'] %}completed{% else %}active bg-danger border-danger text-white{% endif %}">
+                    <span class="step-number">{% if calc['overall_consistent'] %}<i class="bi bi-check"></i>{% else %}5{% endif %}</span>
+                    <span>5. Validasi CR &le; 0.10</span>
+                </a>
+                <a href="{{ url_for('perhitungan_index') }}" class="step-item completed">
+                    <span class="step-number"><i class="bi bi-check"></i></span>
+                    <span>6. Sintesis Perkalian</span>
+                </a>
+                <a href="{{ url_for('perangkingan_index') }}" class="step-item active">
+                    <span class="step-number">7</span>
+                    <span>7. Hasil Perangkingan</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD CONTENT: CHARTS & FLAT TABLES -->
+    <div class="row g-4 mb-4">
+        <!-- Left Column: Bobot Prioritas Kriteria -->
         <div class="col-lg-6">
             <div class="card card-custom h-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <div>
-                        <h6 class="mb-0 fw-bold"><i class="bi bi-pie-chart-fill text-primary me-2"></i> Bobot Prioritas Kriteria</h6>
-                        <small class="text-muted">Distribusi pengaruh masing-masing kriteria terhadap keputusan</small>
+                        <h6 class="mb-0 fw-bold"><i class="bi bi-pie-chart-fill text-primary me-2"></i> Bobot Prioritas Kriteria (W)</h6>
+                        <small class="text-muted">Tingkat pengaruh relatif kriteria dalam pengambilan keputusan</small>
                     </div>
                     <a href="{{ url_for('perbandingan_kriteria') }}" class="btn btn-sm btn-outline-secondary">
-                        <i class="bi bi-pencil-square me-1"></i> Edit Nilai
+                        <i class="bi bi-pencil-square me-1"></i> Ubah Nilai
                     </a>
                 </div>
                 <div class="card-body">
-                    <div style="height: 220px;" class="mb-3 position-relative">
+                    <!-- Doughnut Canvas -->
+                    <div style="height: 200px;" class="mb-3 position-relative">
                         <canvas id="chartCriteria"></canvas>
                     </div>
-                    
+
+                    <!-- Flat Table with Progress Bar -->
                     <div class="table-responsive">
                         <table class="table table-sm table-custom align-middle">
                             <thead>
                                 <tr>
-                                    <th>Kode</th>
+                                    <th style="width: 70px;">Kode</th>
                                     <th>Nama Kriteria</th>
-                                    <th class="text-end">Bobot (W)</th>
-                                    <th class="text-end">Persentase</th>
+                                    <th style="width: 140px;">Distribusi</th>
+                                    <th style="width: 90px;" class="text-end">Bobot (W)</th>
+                                    <th style="width: 70px;" class="text-end">Persen</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% if calc['criteria_ahp'] and calc['criteria_ahp']['weights_list'] %}
                                     {% for item in calc['criteria_ahp']['weights_list'] %}
                                     <tr>
-                                        <td><span class="badge bg-light text-primary border">{{ item['kode'] }}</span></td>
-                                        <td class="fw-semibold">{{ item['nama'] }}</td>
-                                        <td class="text-end font-monospace">{{ item['bobot']|round(4) }}</td>
+                                        <td>
+                                            <span class="badge bg-light text-primary border fw-bold">{{ item['kode'] }}</span>
+                                        </td>
+                                        <td class="fw-semibold text-dark">{{ item['nama'] }}</td>
+                                        <td>
+                                            <div class="progress" style="height: 6px; background-color: #f1f5f9; border-radius: 2px;">
+                                                <div class="progress-bar bg-primary" role="progressbar" 
+                                                     style="width: {{ item['persentase'] }}%; border-radius: 2px;"></div>
+                                            </div>
+                                        </td>
+                                        <td class="text-end font-monospace text-secondary">{{ item['bobot']|round(4) }}</td>
                                         <td class="text-end fw-bold text-primary">{{ item['persentase'] }}%</td>
                                     </tr>
                                     {% endfor %}
                                 {% else %}
                                     <tr>
-                                        <td colspan="4" class="text-center text-muted py-3">Belum ada data kriteria</td>
+                                        <td colspan="5" class="text-center text-muted py-3">Belum ada data kriteria</td>
                                     </tr>
                                 {% endif %}
                             </tbody>
@@ -211,56 +224,132 @@
             </div>
         </div>
 
-        <!-- Right: Perangkingan Alternatif -->
+        <!-- Right Column: Perangkingan Alternatif -->
         <div class="col-lg-6">
             <div class="card card-custom h-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <div>
                         <h6 class="mb-0 fw-bold"><i class="bi bi-bar-chart-fill text-success me-2"></i> Skor Akhir & Perangkingan Alternatif</h6>
-                        <small class="text-muted">Hasil perhitungan matriks perbandingan alternatif</small>
+                        <small class="text-muted">Hasil evaluasi perbandingan seluruh kandidat alternatif</small>
                     </div>
                     <a href="{{ url_for('perangkingan_index') }}" class="btn btn-sm btn-outline-success">
                         <i class="bi bi-arrow-right-circle me-1"></i> Selengkapnya
                     </a>
                 </div>
                 <div class="card-body">
-                    <div style="height: 220px;" class="mb-3 position-relative">
+                    <!-- Bar Chart Canvas -->
+                    <div style="height: 200px;" class="mb-3 position-relative">
                         <canvas id="chartRankings"></canvas>
                     </div>
 
+                    <!-- Flat Table of Rankings -->
                     <div class="table-responsive">
                         <table class="table table-sm table-custom align-middle">
                             <thead>
                                 <tr>
-                                    <th>Peringkat</th>
-                                    <th>Kode</th>
+                                    <th style="width: 80px;" class="text-center">Rank</th>
+                                    <th style="width: 70px;">Kode</th>
                                     <th>Nama Alternatif</th>
-                                    <th class="text-end">Skor Akhir</th>
+                                    <th style="width: 110px;" class="text-end">Skor Akhir</th>
+                                    <th style="width: 120px;" class="text-center">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% if calc['final_rankings'] %}
                                     {% for alt in calc['final_rankings'] %}
                                     <tr {% if alt['ranking'] == 1 %}class="table-warning bg-opacity-25"{% endif %}>
-                                        <td>
+                                        <td class="text-center">
                                             {% if alt['ranking'] == 1 %}
                                                 <span class="badge-medal-1"><i class="bi bi-trophy-fill"></i> Rank 1</span>
+                                            {% elif alt['ranking'] == 2 %}
+                                                <span class="badge bg-secondary">Rank 2</span>
+                                            {% elif alt['ranking'] == 3 %}
+                                                <span class="badge bg-light text-dark border">Rank 3</span>
                                             {% else %}
-                                                <span class="badge bg-secondary">Rank {{ alt['ranking'] }}</span>
+                                                <span class="text-muted small">Rank {{ alt['ranking'] }}</span>
                                             {% endif %}
                                         </td>
-                                        <td><span class="badge bg-light text-dark border">{{ alt['kode'] }}</span></td>
-                                        <td class="fw-semibold">{{ alt['nama'] }}</td>
+                                        <td><span class="badge bg-light text-dark border fw-bold">{{ alt['kode'] }}</span></td>
+                                        <td class="fw-semibold text-dark">{{ alt['nama'] }}</td>
                                         <td class="text-end font-monospace fw-bold text-success">{{ alt['skor_akhir'] }}</td>
+                                        <td class="text-center">
+                                            {% if alt['ranking'] == 1 %}
+                                                <span class="badge bg-success">Terpilih (Utama)</span>
+                                            {% elif alt['ranking'] == 2 %}
+                                                <span class="badge bg-info text-dark">Prioritas 2</span>
+                                            {% else %}
+                                                <span class="badge bg-light text-secondary border">Alternatif</span>
+                                            {% endif %}
+                                        </td>
                                     </tr>
                                     {% endfor %}
                                 {% else %}
                                     <tr>
-                                        <td colspan="4" class="text-center text-muted py-3">Belum ada alternatif yang dinilai</td>
+                                        <td colspan="5" class="text-center text-muted py-3">Belum ada alternatif yang dinilai</td>
                                     </tr>
                                 {% endif %}
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FLAT EXECUTIVE SUMMARY / QUICK INSIGHTS BOX -->
+    <div class="card card-custom">
+        <div class="card-header bg-light">
+            <h6 class="mb-0 fw-bold"><i class="bi bi-journal-text me-2 text-primary"></i> Ringkasan Eksekutif Pengambilan Keputusan</h6>
+        </div>
+        <div class="card-body p-3">
+            <div class="row g-3">
+                <div class="col-md-4 border-end-md">
+                    <div class="p-2">
+                        <span class="text-muted small text-uppercase fw-bold" style="font-size: 0.72rem;">Kriteria Paling Prioritas</span>
+                        {% if calc['criteria_ahp'] and calc['criteria_ahp']['weights_list'] %}
+                            {% set top_crit = calc['criteria_ahp']['weights_list'][0] %}
+                            <h6 class="fw-bold text-dark mt-1 mb-1">
+                                [{{ top_crit['kode'] }}] {{ top_crit['nama'] }}
+                            </h6>
+                            <small class="text-muted">
+                                Bobot pengaruh tertinggi sebesar <strong class="text-primary">{{ top_crit['persentase'] }}%</strong> dari total kriteria.
+                            </small>
+                        {% else %}
+                            <div class="text-muted small mt-1">-</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-4 border-end-md">
+                    <div class="p-2">
+                        <span class="text-muted small text-uppercase fw-bold" style="font-size: 0.72rem;">Hasil Uji Konsistensi (Saaty)</span>
+                        {% if calc['criteria_ahp'] %}
+                            <div class="d-flex align-items-center gap-2 mt-1 mb-1">
+                                <span class="fw-bold text-dark font-monospace">CR = {{ calc['criteria_ahp']['cr'] }}</span>
+                                <span class="badge bg-success">Lolos Uji Konsistensi</span>
+                            </div>
+                            <small class="text-muted font-monospace" style="font-size: 0.76rem;">
+                                &lambda; max: {{ calc['criteria_ahp']['lambda_max'] }} &bull; CI: {{ calc['criteria_ahp']['ci'] }} &bull; RI: {{ calc['criteria_ahp']['ri'] }}
+                            </small>
+                        {% else %}
+                            <div class="text-muted small mt-1">-</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="p-2">
+                        <span class="text-muted small text-uppercase fw-bold" style="font-size: 0.72rem;">Keputusan Akhir yang Disarankan</span>
+                        {% if calc['best_alternative'] %}
+                            <h6 class="fw-bold text-dark mt-1 mb-1">
+                                [{{ calc['best_alternative']['kode'] }}] {{ calc['best_alternative']['nama'] }}
+                            </h6>
+                            <small class="text-muted">
+                                Memperoleh nilai sintesis tertinggi yaitu <strong class="text-success">{{ calc['best_alternative']['skor_akhir'] }}</strong>.
+                            </small>
+                        {% else %}
+                            <div class="text-muted small mt-1">-</div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -272,7 +361,7 @@
 {% block extra_js %}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    // 1. Data Bobot Kriteria untuk Chart
+    // 1. Data Bobot Kriteria untuk Chart (Flat Palette)
     const critLabels = [
         {% if calc['criteria_ahp'] %}
             {% for item in calc['criteria_ahp']['weights_list'] %}
@@ -291,7 +380,7 @@ document.addEventListener("DOMContentLoaded", function () {
         renderCriteriaChart("chartCriteria", critLabels, critValues);
     }
 
-    // 2. Data Alternatif untuk Chart
+    // 2. Data Alternatif untuk Chart (Flat Palette)
     const altLabels = [
         {% for alt in calc['final_rankings'] %}
             "{{ alt['kode'] }} - {{ alt['nama'] }}",

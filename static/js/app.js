@@ -69,13 +69,13 @@ function renderCriteriaChart(canvasId, labels, dataValues) {
             datasets: [{
                 data: dataValues,
                 backgroundColor: [
-                    '#2563eb', // Blue
-                    '#059669', // Emerald
-                    '#d97706', // Amber
-                    '#7c3aed', // Purple
-                    '#db2777', // Pink
-                    '#0891b2', // Cyan
-                    '#ea580c'  // Orange
+                    '#1d4ed8', // Solid Royal Blue
+                    '#059669', // Solid Emerald
+                    '#d97706', // Solid Amber
+                    '#7c3aed', // Solid Purple
+                    '#0d9488', // Solid Teal
+                    '#0284c7', // Solid Sky
+                    '#dc2626'  // Solid Crimson
                 ],
                 borderWidth: 2,
                 borderColor: '#ffffff'
@@ -88,20 +88,20 @@ function renderCriteriaChart(canvasId, labels, dataValues) {
                 legend: {
                     position: 'bottom',
                     labels: {
-                        boxWidth: 12,
-                        padding: 12,
-                        font: { size: 12 }
+                        boxWidth: 10,
+                        padding: 10,
+                        font: { size: 11, weight: '500' }
                     }
                 },
                 tooltip: {
                     callbacks: {
                         label: function (context) {
-                            return `${context.label}: ${context.raw}%`;
+                            return ` ${context.label}: ${context.raw}%`;
                         }
                     }
                 }
             },
-            cutout: '65%'
+            cutout: '70%'
         }
     });
 }
@@ -113,8 +113,8 @@ function renderRankingsChart(canvasId, labels, scores) {
     const ctx = document.getElementById(canvasId);
     if (!ctx || typeof Chart === 'undefined') return;
 
-    // Warna: Peringkat 1 warna emas/emerald, sisanya biru modern
-    const bgColors = scores.map((_, i) => i === 0 ? '#10b981' : '#3b82f6');
+    // Warna solid: Peringkat 1 hijau solid emerald, sisanya biru solid
+    const bgColors = scores.map((_, i) => i === 0 ? '#059669' : '#1d4ed8');
 
     new Chart(ctx, {
         type: 'bar',
@@ -124,7 +124,7 @@ function renderRankingsChart(canvasId, labels, scores) {
                 label: 'Skor Akhir AHP',
                 data: scores,
                 backgroundColor: bgColors,
-                borderRadius: 8,
+                borderRadius: 4,
                 borderSkipped: false
             }]
         },

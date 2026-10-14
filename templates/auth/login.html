@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
         body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0284c7 100%);
+            background-color: #0f172a;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -18,29 +18,29 @@
         }
         .login-card {
             width: 100%;
-            max-width: 440px;
-            background: #ffffff;
-            border-radius: 18px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+            max-width: 420px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            border: 1px solid #1e293b;
             overflow: hidden;
         }
         .login-header {
-            background: #ffffff;
+            background-color: #ffffff;
             padding: 2.2rem 2rem 1.2rem;
             text-align: center;
+            border-bottom: 1px solid #f1f5f9;
         }
         .app-badge-icon {
-            width: 58px;
-            height: 58px;
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            border-radius: 14px;
+            width: 52px;
+            height: 52px;
+            background-color: #1d4ed8;
+            border-radius: 6px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             color: #ffffff;
-            font-size: 1.75rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);
+            font-size: 1.6rem;
+            margin-bottom: 0.85rem;
         }
     </style>
 </head>
@@ -51,14 +51,14 @@
                 <i class="bi bi-diagram-3-fill"></i>
             </div>
             <h4 class="fw-bold text-dark mb-1">Dashboard SPK AHP</h4>
-            <p class="text-muted small mb-0">Analytical Hierarchy Process Decision Support</p>
+            <p class="text-secondary small mb-0">Analytical Hierarchy Process &bull; SPK</p>
         </div>
 
-        <div class="p-4 pt-2">
+        <div class="p-4 pt-3">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show small py-2" role="alert">
+                        <div class="alert alert-{{ category }} alert-dismissible fade show small py-2 border" role="alert">
                             {{ message }}
                             <button type="button" class="btn-close py-2" data-bs-dismiss="alert"></button>
                         </div>
@@ -68,36 +68,36 @@
 
             <form method="POST" action="{{ url_for('login') }}">
                 <div class="mb-3">
-                    <label class="form-label small fw-semibold text-secondary">Email Pengguna</label>
+                    <label class="form-label small fw-semibold text-secondary">Alamat Email</label>
                     <div class="input-group">
-                        <span class="input-group-text bg-light"><i class="bi bi-envelope text-muted"></i></span>
-                        <input type="email" name="email" class="form-control" placeholder="nama@email.com" value="admin@ahp.com" required autofocus>
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope text-muted"></i></span>
+                        <input type="email" name="email" class="form-control border-start-0" placeholder="nama@email.com" value="admin@ahp.com" required autofocus>
                     </div>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label small fw-semibold text-secondary">Password</label>
+                    <label class="form-label small fw-semibold text-secondary">Password Akun</label>
                     <div class="input-group">
-                        <span class="input-group-text bg-light"><i class="bi bi-lock text-muted"></i></span>
-                        <input type="password" name="password" class="form-control" placeholder="••••••••" value="admin123" required>
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
+                        <input type="password" name="password" class="form-control border-start-0" placeholder="••••••••" value="admin123" required>
                     </div>
                 </div>
 
                 <div class="d-grid mt-4">
-                    <button type="submit" class="btn btn-primary py-2 fw-semibold shadow-sm">
+                    <button type="submit" class="btn btn-primary py-2 fw-semibold">
                         <i class="bi bi-box-arrow-in-right me-1"></i> Masuk ke Dashboard
                     </button>
                 </div>
             </form>
 
-            <div class="mt-4 p-3 bg-light rounded-3 border">
-                <div class="small fw-bold text-secondary mb-2"><i class="bi bi-info-circle me-1"></i> Akun Pengujian Sistem:</div>
+            <div class="mt-4 p-3 bg-light rounded border">
+                <div class="small fw-bold text-dark mb-2"><i class="bi bi-key-fill text-primary me-1"></i> Akun Pengujian Sistem (Demo):</div>
                 <div class="d-flex justify-content-between align-items-center mb-1 small">
-                    <span><strong>Admin:</strong> admin@ahp.com</span>
+                    <span class="text-secondary"><strong>Admin:</strong> admin@ahp.com</span>
                     <span class="badge bg-primary">admin123</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center small">
-                    <span><strong>Pengguna:</strong> user@ahp.com</span>
+                    <span class="text-secondary"><strong>Pengguna:</strong> user@ahp.com</span>
                     <span class="badge bg-secondary">user123</span>
                 </div>
             </div>

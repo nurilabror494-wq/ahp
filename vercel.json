@@ -1,7 +1,12 @@
 {
+  "functions": {
+    "api/index.py": {
+      "includeFiles": "static/**"
+    }
+  },
   "rewrites": [
     {
-      "source": "/((?!static/|css/|js/|favicon.ico).*)",
+      "source": "/(.*)",
       "destination": "/api/index"
     }
   ]

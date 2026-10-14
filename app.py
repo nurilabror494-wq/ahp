@@ -9,7 +9,7 @@ from functools import wraps
 from datetime import datetime
 from flask import (
     Flask, render_template, request, redirect, url_for, 
-    session, flash, jsonify, send_file, Response
+    session, flash, jsonify, send_file, Response, send_from_directory
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 import io
@@ -29,6 +29,20 @@ app.secret_key = "ahp_decision_support_system_secret_key_2026"
 with app.app_context():
     init_db()
     seed_default_data()
+
+# Handler statis eksplisit untuk Vercel Serverless & Local
+@app.route('/static/<path:filename>')
+def custom_static(filename):
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    candidate_dirs = [
+        os.path.join(base_dir, 'static'),
+        os.path.join(base_dir, 'public', 'static'),
+        os.path.join(base_dir, 'public'),
+    ]
+    for d in candidate_dirs:
+        if os.path.isfile(os.path.join(d, filename)):
+            return send_from_directory(d, filename)
+    return "Asset not found", 404
 
 # ----------------- DECORATORS & CONTEXT PROCESSORS -----------------
 

@@ -1,0 +1,11 @@
+[project]
+name = "spk-ahp"
+version = "1.0.0"
+description = "Sistem Pendukung Keputusan AHP (Analytical Hierarchy Process)"
+requires-python = ">=3.12"
+dependencies = [
+    "Flask>=3.0.0",
+    "openpyxl>=3.1.2",
+    "numpy>=1.26.0",
+    "Werkzeug>=3.0.1",
+]

@@ -12,13 +12,29 @@ if root_dir not in sys.path:
 
 from app import app
 
-# Pastikan SCRIPT_NAME kosong agar URL publik Flask tidak diawali '/api/index'
-class CleanScriptNameMiddleware:
+# Middleware untuk memetakan REQUEST_URI asli ke PATH_INFO Flask di Vercel
+class VercelMiddleware:
     def __init__(self, wsgi_app):
         self.wsgi_app = wsgi_app
 
     def __call__(self, environ, start_response):
+        # 1. Selalu kosongkan SCRIPT_NAME agar url_for() dan redirect() tidak menyisipkan prefix '/api/index'
         environ['SCRIPT_NAME'] = ''
+
+        # 2. Ambil path asli yang diminta client dari REQUEST_URI, RAW_URI, atau HTTP_X_MATCHED_PATH
+        req_uri = (
+            environ.get('REQUEST_URI') or 
+            environ.get('RAW_URI') or 
+            environ.get('HTTP_X_MATCHED_PATH') or 
+            ''
+        )
+        path = req_uri.split('?')[0]
+
+        if path and not path.startswith('/api/index'):
+            environ['PATH_INFO'] = path
+        elif path.startswith('/api/index'):
+            environ['PATH_INFO'] = '/'
+
         return self.wsgi_app(environ, start_response)
 
-app.wsgi_app = CleanScriptNameMiddleware(app.wsgi_app)
+app.wsgi_app = VercelMiddleware(app.wsgi_app)

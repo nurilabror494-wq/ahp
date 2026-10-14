@@ -18,7 +18,7 @@
     <div class="app-wrapper">
         <!-- SIDEBAR -->
         <aside class="app-sidebar no-print">
-            <div class="sidebar-header">
+            <div class="sidebar-header d-flex align-items-center justify-content-between">
                 <a href="{{ url_for('dashboard') }}" class="sidebar-brand">
                     <div class="brand-icon">
                         <i class="bi bi-diagram-3-fill"></i>
@@ -28,6 +28,9 @@
                         <small style="font-size: 0.68rem; font-weight: normal; color: #94a3b8;">Analytical Hierarchy Process</small>
                     </div>
                 </a>
+                <button class="btn btn-sm btn-outline-light border-0 d-lg-none" id="sidebarClose" type="button" aria-label="Tutup Menu" onclick="window.closeMobileSidebar && window.closeMobileSidebar(event)">
+                    <i class="bi bi-x-lg fs-5"></i>
+                </button>
             </div>
 
             <div class="sidebar-menu">
@@ -111,14 +114,14 @@
         </aside>
 
         <!-- BACKDROP FOR MOBILE SIDEBAR -->
-        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+        <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="window.closeMobileSidebar && window.closeMobileSidebar(event)"></div>
 
         <!-- MAIN APP CONTENT -->
         <main class="app-main">
             <!-- TOPBAR -->
             <header class="app-topbar no-print">
                 <div class="d-flex align-items-center gap-2">
-                    <button class="btn btn-sm btn-light border d-lg-none" id="sidebarToggle" type="button" title="Buka Menu">
+                    <button class="btn btn-sm btn-light border d-lg-none" id="sidebarToggle" type="button" aria-label="Buka Menu" title="Buka Menu" onclick="window.toggleMobileSidebar && window.toggleMobileSidebar(event)">
                         <i class="bi bi-list fs-5"></i>
                     </button>
                     <span class="text-muted fs-6 d-none d-md-inline"><i class="bi bi-folder-check text-primary me-1"></i> Studi Kasus:</span>
@@ -211,7 +214,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     {% include "includes/flat_script.html" %}
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

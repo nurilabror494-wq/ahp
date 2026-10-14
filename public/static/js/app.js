@@ -3,33 +3,72 @@
  * Handles Charts, Dynamic Comparison Matrix Feedback, and Helpers
  */
 
+// Global Mobile Drawer Functions (Accessible from inline HTML onclick & event listeners)
+window.openMobileSidebar = function(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    if (e && e.stopPropagation) e.stopPropagation();
+    var sidebar = document.querySelector(".app-sidebar");
+    var backdrop = document.getElementById("sidebarBackdrop");
+    if (sidebar) sidebar.classList.add("show");
+    if (backdrop) backdrop.classList.add("show");
+    document.body.style.overflow = "hidden";
+};
+
+window.closeMobileSidebar = function(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    if (e && e.stopPropagation) e.stopPropagation();
+    var sidebar = document.querySelector(".app-sidebar");
+    var backdrop = document.getElementById("sidebarBackdrop");
+    if (sidebar) sidebar.classList.remove("show");
+    if (backdrop) backdrop.classList.remove("show");
+    document.body.style.overflow = "";
+};
+
+window.toggleMobileSidebar = function(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    if (e && e.stopPropagation) e.stopPropagation();
+    var sidebar = document.querySelector(".app-sidebar");
+    if (sidebar && sidebar.classList.contains("show")) {
+        window.closeMobileSidebar(e);
+    } else {
+        window.openMobileSidebar(e);
+    }
+};
+
 document.addEventListener("DOMContentLoaded", function () {
-    // 0. Mobile Sidebar Toggle & Backdrop
-    const sidebarToggle = document.getElementById("sidebarToggle");
-    const appSidebar = document.querySelector(".app-sidebar");
-    const backdrop = document.getElementById("sidebarBackdrop");
+    // 0. Bind Mobile Sidebar Toggle, Close, and Backdrop
+    var sidebarToggle = document.getElementById("sidebarToggle");
+    var sidebarClose = document.getElementById("sidebarClose");
+    var backdrop = document.getElementById("sidebarBackdrop");
+    var appSidebar = document.querySelector(".app-sidebar");
 
-    if (sidebarToggle && appSidebar && backdrop) {
-        sidebarToggle.addEventListener("click", function () {
-            appSidebar.classList.toggle("show");
-            backdrop.classList.toggle("show");
-        });
+    if (sidebarToggle) {
+        sidebarToggle.onclick = window.toggleMobileSidebar;
+    }
+    if (sidebarClose) {
+        sidebarClose.onclick = window.closeMobileSidebar;
+    }
+    if (backdrop) {
+        backdrop.onclick = window.closeMobileSidebar;
+    }
 
-        backdrop.addEventListener("click", function () {
-            appSidebar.classList.remove("show");
-            backdrop.classList.remove("show");
-        });
-
-        const navLinks = appSidebar.querySelectorAll(".nav-link-custom");
-        navLinks.forEach(link => {
+    if (appSidebar) {
+        var navLinks = appSidebar.querySelectorAll(".nav-link-custom");
+        navLinks.forEach(function(link) {
             link.addEventListener("click", function () {
                 if (window.innerWidth < 992) {
-                    appSidebar.classList.remove("show");
-                    backdrop.classList.remove("show");
+                    window.closeMobileSidebar();
                 }
             });
         });
     }
+
+    // Close on Escape key
+    document.addEventListener("keydown", function(e) {
+        if (e.key === "Escape" || e.keyCode === 27) {
+            window.closeMobileSidebar();
+        }
+    });
 
     // 1. Inisialisasi Tooltip Bootstrap jika ada
     if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {

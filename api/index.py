@@ -18,10 +18,12 @@ class VercelPathMiddleware:
         self.wsgi_app = wsgi_app
 
     def __call__(self, environ, start_response):
+        raw_uri = environ.get('REQUEST_URI', '').split('?')[0]
         matched_path = (
             environ.get('HTTP_X_MATCHED_PATH') or 
             environ.get('HTTP_X_FORWARDED_URI') or 
-            environ.get('HTTP_X_ORIGINAL_URL')
+            environ.get('HTTP_X_ORIGINAL_URL') or
+            (raw_uri if raw_uri and not raw_uri.startswith('/api') else None)
         )
         if matched_path and not matched_path.startswith('/api/index'):
             environ['PATH_INFO'] = matched_path

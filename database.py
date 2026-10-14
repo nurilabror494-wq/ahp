@@ -14,19 +14,47 @@ Menyediakan struktur tabel sesuai rancangan:
 
 import sqlite3
 import os
+import shutil
+import tempfile
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "spk_ahp.db")
+def get_db_path():
+    """Mengembalikan path database. Di Vercel serverless, gunakan temp directory karena filesystem root bersifat read-only."""
+    if os.environ.get('VERCEL'):
+        db_file = os.path.join(tempfile.gettempdir(), "spk_ahp.db")
+        source_db = os.path.join(os.path.dirname(__file__), "spk_ahp.db")
+        if not os.path.exists(db_file) and os.path.exists(source_db):
+            try:
+                shutil.copyfile(source_db, db_file)
+            except Exception:
+                pass
+        return db_file
+    return os.path.join(os.path.dirname(__file__), "spk_ahp.db")
 
-def get_db():
-    conn = sqlite3.connect(DB_PATH)
+def get_raw_connection():
+    conn = sqlite3.connect(get_db_path())
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
+def ensure_db_ready():
+    """Memastikan tabel database sudah dibuat dan diisi data seed (berguna saat serverless cold start di Vercel)."""
+    conn = get_raw_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
+    exists = cursor.fetchone()
+    conn.close()
+    if not exists:
+        init_db()
+        seed_default_data()
+
+def get_db():
+    ensure_db_ready()
+    return get_raw_connection()
+
 def init_db():
-    conn = get_db()
+    conn = get_raw_connection()
     cursor = conn.cursor()
     
     # 1. users
@@ -162,7 +190,7 @@ def init_db():
 
 def seed_default_data():
     """Mengisi data awal pengguna dan studi kasus contoh (5 kriteria, 4 alternatif)."""
-    conn = get_db()
+    conn = get_raw_connection()
     cursor = conn.cursor()
     
     # 1. Seed Users (Admin & User)

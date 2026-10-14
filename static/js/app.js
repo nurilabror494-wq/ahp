@@ -4,6 +4,33 @@
  */
 
 document.addEventListener("DOMContentLoaded", function () {
+    // 0. Mobile Sidebar Toggle & Backdrop
+    const sidebarToggle = document.getElementById("sidebarToggle");
+    const appSidebar = document.querySelector(".app-sidebar");
+    const backdrop = document.getElementById("sidebarBackdrop");
+
+    if (sidebarToggle && appSidebar && backdrop) {
+        sidebarToggle.addEventListener("click", function () {
+            appSidebar.classList.toggle("show");
+            backdrop.classList.toggle("show");
+        });
+
+        backdrop.addEventListener("click", function () {
+            appSidebar.classList.remove("show");
+            backdrop.classList.remove("show");
+        });
+
+        const navLinks = appSidebar.querySelectorAll(".nav-link-custom");
+        navLinks.forEach(link => {
+            link.addEventListener("click", function () {
+                if (window.innerWidth < 992) {
+                    appSidebar.classList.remove("show");
+                    backdrop.classList.remove("show");
+                }
+            });
+        });
+    }
+
     // 1. Inisialisasi Tooltip Bootstrap jika ada
     if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));

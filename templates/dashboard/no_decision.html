@@ -4,17 +4,17 @@
 
 {% block content %}
 <div class="container text-center py-5">
-    <div class="card card-custom mx-auto p-5" style="max-width: 600px;">
+    <div class="card card-custom border-accent-primary mx-auto p-4 p-md-5" style="max-width: 540px;">
         <div class="mb-3 text-primary">
-            <i class="bi bi-folder-plus display-1"></i>
+            <i class="bi bi-folder-plus display-2"></i>
         </div>
-        <h4 class="fw-bold mb-2">Belum Ada Studi Kasus Keputusan</h4>
-        <p class="text-muted mb-4">
-            Untuk memulai perhitungan Analytical Hierarchy Process (AHP), buat studi kasus keputusan baru terlebih dahulu.
+        <h4 class="fw-bold mb-2 text-dark">Belum Ada Studi Kasus Keputusan</h4>
+        <p class="text-muted mb-4 small">
+            Untuk memulai proses Analytical Hierarchy Process (AHP), buat studi kasus keputusan baru terlebih dahulu (contoh: Pemilihan Karyawan Terbaik, Lokasi Bisnis, atau Seleksi Beasiswa).
         </p>
         <div>
-            <a href="{{ url_for('decisions_index') }}" class="btn btn-primary px-4 py-2">
-                <i class="bi bi-plus-circle me-1"></i> Buat Studi Kasus Baru
+            <a href="{{ url_for('decisions_index') }}" class="btn btn-primary px-4 py-2 fw-semibold">
+                <i class="bi bi-plus-lg me-1"></i> Buat Studi Kasus Baru
             </a>
         </div>
     </div>

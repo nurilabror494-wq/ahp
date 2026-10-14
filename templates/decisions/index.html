@@ -4,42 +4,48 @@
 
 {% block content %}
 <div class="container-fluid">
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <!-- Header Page -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
         <div>
-            <h4 class="fw-bold mb-1 text-dark"><i class="bi bi-folder2-open text-primary me-2"></i> Studi Kasus Keputusan (Multi-Decision)</h4>
-            <p class="text-muted small mb-0">Kelola berbagai studi kasus pengambilan keputusan AHP (misal: Karyawan Terbaik, Lokasi Usaha, Beasiswa)</p>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge-flat-primary px-2 py-1 rounded small fw-bold">Multi-Keputusan</span>
+                <h4 class="fw-bold mb-0 text-dark">Studi Kasus Pengambilan Keputusan</h4>
+            </div>
+            <p class="text-muted small mb-0">Kelola berbagai skenario AHP (misal: Rekrutmen Karyawan, Pemilihan Lokasi Usaha, Penentuan Beasiswa)</p>
         </div>
         <div>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahDecision">
-                <i class="bi bi-plus-lg me-1"></i> Tambah Studi Kasus Baru
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalTambahDecision">
+                <i class="bi bi-plus-lg me-1"></i> Buat Studi Kasus Baru
             </button>
         </div>
     </div>
 
     <div class="row g-4">
         {% for d in decisions %}
-        <div class="col-lg-6">
-            <div class="card card-custom h-100 {% if active_decision and active_decision['id'] == d['id'] %}border-primary shadow{% endif %}">
+        <div class="col-12 col-lg-6">
+            <div class="card card-custom h-100 {% if active_decision and active_decision['id'] == d['id'] %}border-accent-primary{% endif %}">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <div>
+                    <div class="d-flex align-items-center gap-2">
                         {% if active_decision and active_decision['id'] == d['id'] %}
-                            <span class="badge bg-primary me-2"><i class="bi bi-check-circle-fill"></i> Kasus Aktif</span>
+                            <span class="badge-flat-primary px-2 py-1 rounded small fw-bold"><i class="bi bi-check-circle-fill"></i> Kasus Aktif</span>
                         {% else %}
-                            <span class="badge bg-light text-muted border me-2">Studi Kasus #{{ d['id'] }}</span>
+                            <span class="badge-flat-light px-2 py-1 rounded small fw-bold">Studi Kasus #{{ d['id'] }}</span>
                         {% endif %}
                         <span class="text-muted small"><i class="bi bi-calendar3 me-1"></i> {{ d['tanggal'] }}</span>
                     </div>
                     <div>
-                        <button type="button" class="btn btn-sm btn-outline-secondary me-1" 
-                                data-bs-toggle="modal" data-bs-target="#modalEditDecision{{ d['id'] }}" title="Edit">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        {% if decisions|length > 1 %}
-                        <button type="button" class="btn btn-sm btn-outline-danger" 
-                                data-bs-toggle="modal" data-bs-target="#modalHapusDecision{{ d['id'] }}" title="Hapus">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                        {% endif %}
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-outline-secondary" 
+                                    data-bs-toggle="modal" data-bs-target="#modalEditDecision{{ d['id'] }}" title="Edit Kasus">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            {% if decisions|length > 1 %}
+                            <button type="button" class="btn btn-outline-danger" 
+                                    data-bs-toggle="modal" data-bs-target="#modalHapusDecision{{ d['id'] }}" title="Hapus Kasus">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
 
@@ -50,7 +56,7 @@
                     <p class="small text-secondary mb-3">{{ d['deskripsi'] }}</p>
                     {% endif %}
 
-                    <div class="d-flex gap-3 text-muted small mb-4">
+                    <div class="d-flex flex-wrap gap-3 text-muted small mb-4">
                         <div><i class="bi bi-list-check text-primary me-1"></i> <strong>{{ d['total_kriteria'] }}</strong> Kriteria</div>
                         <div><i class="bi bi-people text-success me-1"></i> <strong>{{ d['total_alternatif'] }}</strong> Alternatif</div>
                         <div><i class="bi bi-person text-secondary me-1"></i> {{ d['pembuat'] or 'Administrator' }}</div>
@@ -72,8 +78,8 @@
         </div>
 
         <!-- Modal Edit Decision -->
-        <div class="modal fade" id="modalEditDecision{{ d['id'] }}" tabindex="-1">
-            <div class="modal-dialog">
+        <div class="modal fade" id="modalEditDecision{{ d['id'] }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <form method="POST" action="{{ url_for('decisions_edit', dec_id=d['id']) }}">
                         <div class="modal-header">
@@ -82,7 +88,7 @@
                         </div>
                         <div class="modal-body">
                             <div class="mb-3">
-                                <label class="form-label small fw-semibold">Nama / Judul Kasus Keputusan</label>
+                                <label class="form-label small fw-semibold">Nama / Judul Kasus</label>
                                 <input type="text" name="nama_keputusan" class="form-control" value="{{ d['nama_keputusan'] }}" required>
                             </div>
                             <div class="mb-3">
@@ -108,16 +114,16 @@
         </div>
 
         <!-- Modal Hapus Decision -->
-        <div class="modal fade" id="modalHapusDecision{{ d['id'] }}" tabindex="-1">
-            <div class="modal-dialog modal-sm">
+        <div class="modal fade" id="modalHapusDecision{{ d['id'] }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-sm modal-dialog-centered">
                 <div class="modal-content">
                     <form method="POST" action="{{ url_for('decisions_delete', dec_id=d['id']) }}">
                         <div class="modal-header bg-danger text-white">
-                            <h6 class="modal-title fw-bold">Hapus Studi Kasus</h6>
+                            <h6 class="modal-title fw-bold text-white">Hapus Studi Kasus</h6>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            <p class="small mb-0">Apakah Anda yakin ingin menghapus studi kasus <strong>{{ d['nama_keputusan'] }}</strong>? Seluruh kriteria, alternatif, dan nilai perbandingan di dalamnya akan terhapus permanen.</p>
+                            <p class="small mb-0">Hapus studi kasus <strong>{{ d['nama_keputusan'] }}</strong>? Seluruh kriteria, alternatif, dan nilai perbandingan di dalamnya akan terhapus.</p>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Batal</button>
@@ -132,8 +138,8 @@
 </div>
 
 <!-- Modal Tambah Decision -->
-<div class="modal fade" id="modalTambahDecision" tabindex="-1">
-    <div class="modal-dialog">
+<div class="modal fade" id="modalTambahDecision" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <form method="POST" action="{{ url_for('decisions_create') }}">
                 <div class="modal-header">

@@ -4,13 +4,20 @@
 
 {% block content %}
 <div class="container-fluid">
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <!-- Header Page -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
         <div>
-            <h4 class="fw-bold mb-1 text-dark"><i class="bi bi-people text-success me-2"></i> Manajemen Alternatif</h4>
-            <p class="text-muted small mb-0">Kelola daftar pilihan atau kandidat yang akan dinilai untuk studi kasus: <strong>{{ active_decision['nama_keputusan'] }}</strong></p>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge-flat-success px-2 py-1 rounded small fw-bold">Modul 3</span>
+                <h4 class="fw-bold mb-0 text-dark">Manajemen Alternatif / Pilihan</h4>
+            </div>
+            <p class="text-muted small mb-0">Kelola daftar kandidat yang akan dinilai untuk studi kasus: <strong>{{ active_decision['nama_keputusan'] }}</strong></p>
         </div>
-        <div>
-            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalTambahAlternatif">
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('perbandingan_alternatif') }}" class="btn btn-outline-success btn-sm">
+                <i class="bi bi-grid-3x3 me-1"></i> Perbandingan Alternatif
+            </a>
+            <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalTambahAlternatif">
                 <i class="bi bi-plus-lg me-1"></i> Tambah Alternatif
             </button>
         </div>
@@ -19,54 +26,59 @@
     <!-- Tabel Alternatif -->
     <div class="card card-custom">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 fw-bold">Daftar Pilihan Alternatif / Kandidat</h6>
-            <span class="badge bg-secondary">{{ alternatives|length }} Alternatif Terdaftar</span>
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-people text-success"></i>
+                <h6 class="mb-0 fw-bold">Daftar Pilihan Alternatif / Kandidat</h6>
+            </div>
+            <span class="badge-flat-dark px-2 py-1 rounded small">{{ alternatives|length }} Alternatif Terdaftar</span>
         </div>
         <div class="table-responsive">
             <table class="table table-custom align-middle">
                 <thead>
                     <tr>
                         <th style="width: 70px;">Rank</th>
-                        <th style="width: 120px;">Kode</th>
+                        <th style="width: 100px;">Kode</th>
                         <th>Nama Alternatif / Kandidat</th>
                         <th>Deskripsi / Profil Singkat</th>
                         <th style="width: 140px;" class="text-end">Skor Akhir</th>
-                        <th style="width: 140px;" class="text-center">Aksi</th>
+                        <th style="width: 130px;" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for a in alternatives %}
-                    <tr {% if a['ranking'] == 1 %}class="table-warning bg-opacity-25"{% endif %}>
+                    <tr {% if a['ranking'] == 1 %}class="table-light"{% endif %}>
                         <td>
                             {% if a['ranking'] == 1 %}
                                 <span class="badge-medal-1"><i class="bi bi-trophy-fill"></i> 1</span>
                             {% elif a['ranking'] > 1 %}
-                                <span class="badge bg-secondary">#{{ a['ranking'] }}</span>
+                                <span class="badge-flat-slate px-2 py-1 rounded small fw-bold">#{{ a['ranking'] }}</span>
                             {% else %}
-                                <span class="badge bg-light text-dark border">-</span>
+                                <span class="badge-flat-light px-2 py-1 rounded small">-</span>
                             {% endif %}
                         </td>
-                        <td><span class="badge bg-light text-dark border fw-bold px-2 py-1">{{ a['kode'] }}</span></td>
+                        <td><span class="badge-flat-dark px-2 py-1 rounded small fw-bold">{{ a['kode'] }}</span></td>
                         <td class="fw-bold text-dark">{{ a['nama'] }}</td>
                         <td class="text-muted small">{{ a['deskripsi'] or '-' }}</td>
                         <td class="text-end font-monospace fw-bold text-success">
                             {{ (a['skor_akhir'] or 0)|round(4) }}
                         </td>
                         <td class="text-center">
-                            <button type="button" class="btn btn-sm btn-outline-secondary me-1" 
-                                    data-bs-toggle="modal" data-bs-target="#modalEditAlt{{ a['id'] }}" title="Edit">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-danger" 
-                                    data-bs-toggle="modal" data-bs-target="#modalHapusAlt{{ a['id'] }}" title="Hapus">
-                                <i class="bi bi-trash"></i>
-                            </button>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-secondary" 
+                                        data-bs-toggle="modal" data-bs-target="#modalEditAlt{{ a['id'] }}" title="Edit Alternatif">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-danger" 
+                                        data-bs-toggle="modal" data-bs-target="#modalHapusAlt{{ a['id'] }}" title="Hapus Alternatif">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
 
                     <!-- Modal Edit Alternatif -->
-                    <div class="modal fade" id="modalEditAlt{{ a['id'] }}" tabindex="-1">
-                        <div class="modal-dialog">
+                    <div class="modal fade" id="modalEditAlt{{ a['id'] }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
                                 <form method="POST" action="{{ url_for('alternatif_edit', a_id=a['id']) }}">
                                     <div class="modal-header">
@@ -97,16 +109,16 @@
                     </div>
 
                     <!-- Modal Hapus Alternatif -->
-                    <div class="modal fade" id="modalHapusAlt{{ a['id'] }}" tabindex="-1">
-                        <div class="modal-dialog modal-sm">
+                    <div class="modal fade" id="modalHapusAlt{{ a['id'] }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-sm modal-dialog-centered">
                             <div class="modal-content">
                                 <form method="POST" action="{{ url_for('alternatif_delete', a_id=a['id']) }}">
                                     <div class="modal-header bg-danger text-white">
-                                        <h6 class="modal-title fw-bold">Hapus Alternatif</h6>
+                                        <h6 class="modal-title fw-bold text-white">Hapus Alternatif</h6>
                                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <p class="small mb-0">Apakah Anda yakin ingin menghapus alternatif <strong>{{ a['kode'] }} - {{ a['nama'] }}</strong>?</p>
+                                        <p class="small mb-0">Apakah Anda yakin ingin menghapus alternatif <strong>{{ a['kode'] }} - {{ a['nama'] }}</strong>? Seluruh penilaian terkait alternatif ini akan direset.</p>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Batal</button>
@@ -118,9 +130,10 @@
                     </div>
                     {% else %}
                     <tr>
-                        <td colspan="6" class="text-center py-4 text-muted">
-                            <i class="bi bi-inbox fs-3 d-block mb-1"></i>
-                            Belum ada alternatif. Klik tombol "Tambah Alternatif" untuk menambahkan opsi kandidat.
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-2 d-block mb-2 text-secondary"></i>
+                            <div class="fw-semibold">Belum ada alternatif yang terdaftar</div>
+                            <small>Klik tombol "Tambah Alternatif" untuk menambahkan opsi kandidat yang akan dievaluasi.</small>
                         </td>
                     </tr>
                     {% endfor %}
@@ -131,8 +144,8 @@
 </div>
 
 <!-- Modal Tambah Alternatif -->
-<div class="modal fade" id="modalTambahAlternatif" tabindex="-1">
-    <div class="modal-dialog">
+<div class="modal fade" id="modalTambahAlternatif" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <form method="POST" action="{{ url_for('alternatif_create') }}">
                 <div class="modal-header">
@@ -149,7 +162,7 @@
                         <input type="text" name="nama" class="form-control" placeholder="Contoh: Kandidat Budi, Produk X, Lokasi Y, dll." required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold">Deskripsi</label>
+                        <label class="form-label small fw-semibold">Deskripsi / Profil</label>
                         <textarea name="deskripsi" class="form-control" rows="3" placeholder="Informasi singkat tentang alternatif ini..."></textarea>
                     </div>
                 </div>

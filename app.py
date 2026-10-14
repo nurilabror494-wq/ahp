@@ -159,8 +159,6 @@ def profile():
 
 @app.route('/')
 @app.route('/dashboard')
-@app.route('/api')
-@app.route('/api/index')
 @login_required
 def dashboard():
     conn = get_db()

@@ -4,7 +4,7 @@ Vercel Serverless Function Entry Point for Flask
 
 import sys
 import os
-from urllib.parse import parse_qs, urlencode
+from urllib.parse import parse_qs, urlencode, unquote
 
 # Tambahkan direktori root proyek ke sys.path
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -24,10 +24,20 @@ class VercelMiddleware:
 
         # 2. Ekstrak path yang diteruskan oleh rewrite Vercel via parameter __path
         qs = environ.get('QUERY_STRING', '')
-        parsed = parse_qs(qs, keep_blank_values=True)
+        # Unquote diperlukan karena Vercel me-rewrite query string dengan URL encoding (misal: __path%3D/login)
+        unquoted_qs = unquote(qs)
+        parsed = parse_qs(unquoted_qs, keep_blank_values=True)
 
         if '__path' in parsed and parsed['__path']:
             raw_path = parsed.pop('__path')[0]
+
+            # Pisahkan extra query params jika tertempel pada __path
+            if '?' in raw_path:
+                raw_path, extra_qs = raw_path.split('?', 1)
+                extra_parsed = parse_qs(extra_qs, keep_blank_values=True)
+                for k, vs in extra_parsed.items():
+                    parsed.setdefault(k, []).extend(vs)
+
             # Bersihkan __path dari QUERY_STRING agar tidak mengotori request.args Flask
             clean_pairs = []
             for k, vs in parsed.items():
@@ -40,23 +50,26 @@ class VercelMiddleware:
                 raw_path = '/' + raw_path
             environ['PATH_INFO'] = raw_path
         else:
-            # Fallback ke REQUEST_URI atau RAW_URI
+            # Fallback ke HTTP_X_MATCHED_PATH, REQUEST_URI, atau RAW_URI
             req_uri = (
+                environ.get('HTTP_X_MATCHED_PATH') or
                 environ.get('REQUEST_URI') or 
                 environ.get('RAW_URI') or 
-                environ.get('HTTP_X_MATCHED_PATH') or 
                 ''
             )
             path = req_uri.split('?')[0]
             if path and not path.startswith('/api/index'):
                 environ['PATH_INFO'] = path
             else:
-                environ['PATH_INFO'] = '/'
+                curr_path = environ.get('PATH_INFO', '')
+                if not curr_path or curr_path.startswith('/api/index'):
+                    environ['PATH_INFO'] = '/'
 
-        # Pastikan PATH_INFO tidak kosong
+        # Pastikan PATH_INFO selalu valid
         if not environ.get('PATH_INFO'):
             environ['PATH_INFO'] = '/'
 
         return self.wsgi_app(environ, start_response)
 
 app.wsgi_app = VercelMiddleware(app.wsgi_app)
+

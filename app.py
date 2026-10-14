@@ -70,7 +70,12 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
             flash("Silakan login terlebih dahulu untuk mengakses sistem.", "warning")
-            return redirect(url_for('login', next=request.url))
+            next_url = request.path
+            if request.query_string:
+                next_url += '?' + request.query_string.decode('utf-8', 'ignore')
+            if next_url == '/' or not next_url or next_url.startswith('/api/index'):
+                return redirect(url_for('login'))
+            return redirect(url_for('login', next=next_url))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -139,7 +144,9 @@ def login():
             flash(f"Selamat datang kembali, {user['nama']}!", "success")
             
             next_url = request.args.get('next')
-            return redirect(next_url or url_for('dashboard'))
+            if not next_url or not next_url.startswith('/') or next_url.startswith('//') or next_url.startswith('/api/index'):
+                next_url = url_for('dashboard')
+            return redirect(next_url)
         else:
             flash("Email atau password yang Anda masukkan salah.", "danger")
             
@@ -192,7 +199,6 @@ def profile():
 
 @app.route('/')
 @app.route('/dashboard')
-@app.route('/api/index')
 @login_required
 def dashboard():
     conn = get_db()

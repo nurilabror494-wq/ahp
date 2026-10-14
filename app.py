@@ -5,6 +5,7 @@ Database: SQLite
 """
 
 import os
+from urllib.parse import parse_qs, urlencode, unquote
 from functools import wraps
 from datetime import datetime
 from flask import (
@@ -24,6 +25,44 @@ from services import (
 
 app = Flask(__name__)
 app.secret_key = "ahp_decision_support_system_secret_key_2026"
+
+# WSGI Middleware untuk normalisasi routing Vercel Serverless
+class VercelMiddleware:
+    def __init__(self, wsgi_app):
+        self.wsgi_app = wsgi_app
+
+    def __call__(self, environ, start_response):
+        environ['SCRIPT_NAME'] = ''
+        qs = environ.get('QUERY_STRING', '')
+        unquoted_qs = unquote(qs)
+        parsed = parse_qs(unquoted_qs, keep_blank_values=True)
+
+        if '__path' in parsed and parsed['__path']:
+            raw_path = parsed.pop('__path')[0]
+            if '?' in raw_path:
+                raw_path, extra_qs = raw_path.split('?', 1)
+                extra_parsed = parse_qs(extra_qs, keep_blank_values=True)
+                for k, vs in extra_parsed.items():
+                    parsed.setdefault(k, []).extend(vs)
+            clean_pairs = []
+            for k, vs in parsed.items():
+                for v in vs:
+                    clean_pairs.append((k, v))
+            environ['QUERY_STRING'] = urlencode(clean_pairs)
+            if not raw_path.startswith('/'):
+                raw_path = '/' + raw_path
+            environ['PATH_INFO'] = raw_path
+        else:
+            curr = environ.get('PATH_INFO', '')
+            if curr == '/api/index' or curr == '/api/index/':
+                environ['PATH_INFO'] = '/'
+
+        if not environ.get('PATH_INFO'):
+            environ['PATH_INFO'] = '/'
+
+        return self.wsgi_app(environ, start_response)
+
+app.wsgi_app = VercelMiddleware(app.wsgi_app)
 
 # Inisialisasi DB saat startup
 with app.app_context():
@@ -53,12 +92,12 @@ def debug_env():
 
 @app.errorhandler(404)
 def handle_404(e):
-    return jsonify({
-        "status": 404,
-        "message": "Route Not Found",
-        "path": request.path,
-        "environ": {k: str(v) for k, v in request.environ.items() if isinstance(v, (str, int, float, bool))}
-    }), 404
+    if request.path.startswith('/api/') or request.is_json:
+        return jsonify({"status": 404, "message": "Endpoint tidak ditemukan", "path": request.path}), 404
+    if 'user_id' in session:
+        flash("Halaman yang Anda tuju tidak ditemukan.", "warning")
+        return redirect(url_for('dashboard'))
+    return redirect(url_for('login'))
 
 # ----------------- DECORATORS & CONTEXT PROCESSORS -----------------
 

@@ -57,10 +57,7 @@ def handle_404(e):
         "status": 404,
         "message": "Route Not Found",
         "path": request.path,
-        "PATH_INFO": request.environ.get('PATH_INFO'),
-        "SCRIPT_NAME": request.environ.get('SCRIPT_NAME'),
-        "REQUEST_URI": request.environ.get('REQUEST_URI'),
-        "headers": dict(request.headers)
+        "environ": {k: str(v) for k, v in request.environ.items() if isinstance(v, (str, int, float, bool))}
     }), 404
 
 # ----------------- DECORATORS & CONTEXT PROCESSORS -----------------

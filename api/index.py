@@ -1,5 +1,5 @@
 """
-Vercel Serverless Function Entry Point for Flask with WSGI Path Middleware
+Vercel Serverless Function Entry Point for Flask
 """
 
 import sys
@@ -12,39 +12,13 @@ if root_dir not in sys.path:
 
 from app import app
 
-# Middleware untuk menormalisasi PATH_INFO dan SCRIPT_NAME di serverless Vercel
-class VercelPathMiddleware:
+# Pastikan SCRIPT_NAME kosong agar URL publik Flask tidak diawali '/api/index'
+class CleanScriptNameMiddleware:
     def __init__(self, wsgi_app):
         self.wsgi_app = wsgi_app
 
     def __call__(self, environ, start_response):
-        # 1. Selalu kosongkan SCRIPT_NAME agar Flask url_for() dan redirect()
-        # tidak menyisipkan prefix '/api/index' ke URL publik dan asset CSS/JS.
         environ['SCRIPT_NAME'] = ''
-
-        # 2. Ambil path yang diminta klien dari header Vercel atau REQUEST_URI
-        raw_uri = environ.get('REQUEST_URI', '').split('?')[0]
-        matched_path = (
-            environ.get('HTTP_X_MATCHED_PATH') or 
-            environ.get('HTTP_X_FORWARDED_URI') or 
-            environ.get('HTTP_X_ORIGINAL_URL') or
-            (raw_uri if raw_uri and not raw_uri.startswith('/api') else None)
-        )
-        if matched_path and not matched_path.startswith('/api/index'):
-            environ['PATH_INFO'] = matched_path
-        else:
-            path = environ.get('PATH_INFO', '')
-            if path.startswith('/api/index.py'):
-                environ['PATH_INFO'] = path[len('/api/index.py'):] or '/'
-            elif path.startswith('/api/index'):
-                environ['PATH_INFO'] = path[len('/api/index'):] or '/'
-            elif path in ('/api', '/api/'):
-                environ['PATH_INFO'] = '/'
-
-        if not environ.get('PATH_INFO'):
-            environ['PATH_INFO'] = '/'
-
         return self.wsgi_app(environ, start_response)
 
-# Pasang middleware ke app.wsgi_app
-app.wsgi_app = VercelPathMiddleware(app.wsgi_app)
+app.wsgi_app = CleanScriptNameMiddleware(app.wsgi_app)

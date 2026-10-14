@@ -44,6 +44,25 @@ def custom_static(filename):
             return send_from_directory(d, filename)
     return "Asset not found", 404
 
+@app.route('/debug-env')
+def debug_env():
+    return jsonify({
+        k: str(v) for k, v in request.environ.items() 
+        if isinstance(v, (str, int, float, bool))
+    })
+
+@app.errorhandler(404)
+def handle_404(e):
+    return jsonify({
+        "status": 404,
+        "message": "Route Not Found",
+        "path": request.path,
+        "PATH_INFO": request.environ.get('PATH_INFO'),
+        "SCRIPT_NAME": request.environ.get('SCRIPT_NAME'),
+        "REQUEST_URI": request.environ.get('REQUEST_URI'),
+        "headers": dict(request.headers)
+    }), 404
+
 # ----------------- DECORATORS & CONTEXT PROCESSORS -----------------
 
 def login_required(f):

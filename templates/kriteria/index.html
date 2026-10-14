@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Manajemen Kriteria - SPK AHP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h4 class="fw-bold mb-1 text-dark"><i class="bi bi-list-check text-primary me-2"></i> Manajemen Kriteria</h4>
+            <p class="text-muted small mb-0">Kelola kriteria penilaian keputusan untuk studi kasus: <strong>{{ active_decision['nama_keputusan'] }}</strong></p>
+        </div>
+        <div>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahKriteria">
+                <i class="bi bi-plus-lg me-1"></i> Tambah Kriteria
+            </button>
+        </div>
+    </div>
+
+    <!-- Alert Status Bobot -->
+    <div class="card card-custom mb-4">
+        <div class="card-body py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <span class="text-muted small">Status Konsistensi Penilaian Kriteria:</span>
+                {% if calc['criteria_ahp'] and calc['criteria_ahp']['is_consistent'] %}
+                    <span class="badge-consistent ms-2"><i class="bi bi-check-circle-fill"></i> Konsisten (CR = {{ calc['criteria_ahp']['cr'] }})</span>
+                {% else %}
+                    <span class="badge-inconsistent ms-2"><i class="bi bi-exclamation-triangle-fill"></i> Tidak Konsisten (CR = {{ calc['criteria_ahp']['cr'] if calc['criteria_ahp'] else '0' }})</span>
+                {% endif %}
+            </div>
+            <div>
+                <a href="{{ url_for('perbandingan_kriteria') }}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-sliders me-1"></i> Sesuaikan Perbandingan Kriteria
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabel Kriteria -->
+    <div class="card card-custom">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold">Daftar Kriteria Penilaian</h6>
+            <span class="badge bg-secondary">{{ criteria|length }} Kriteria Terdaftar</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-custom align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">No</th>
+                        <th style="width: 120px;">Kode</th>
+                        <th>Nama Kriteria</th>
+                        <th>Deskripsi</th>
+                        <th style="width: 140px;" class="text-end">Bobot AHP</th>
+                        <th style="width: 130px;" class="text-end">Persentase</th>
+                        <th style="width: 140px;" class="text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in criteria %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><span class="badge bg-light text-primary border fw-bold px-2 py-1">{{ c['kode'] }}</span></td>
+                        <td class="fw-semibold">{{ c['nama'] }}</td>
+                        <td class="text-muted small">{{ c['deskripsi'] or '-' }}</td>
+                        <td class="text-end font-monospace">{{ (c['bobot'] or 0)|round(4) }}</td>
+                        <td class="text-end fw-bold text-primary">{{ ((c['bobot'] or 0) * 100)|round(2) }}%</td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-sm btn-outline-secondary me-1" 
+                                    data-bs-toggle="modal" data-bs-target="#modalEditKriteria{{ c['id'] }}" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                    data-bs-toggle="modal" data-bs-target="#modalHapusKriteria{{ c['id'] }}" title="Hapus">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- Modal Edit Kriteria -->
+                    <div class="modal fade" id="modalEditKriteria{{ c['id'] }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form method="POST" action="{{ url_for('kriteria_edit', c_id=c['id']) }}">
+                                    <div class="modal-header">
+                                        <h6 class="modal-title fw-bold">Edit Kriteria [{{ c['kode'] }}]</h6>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-semibold">Kode Kriteria</label>
+                                            <input type="text" name="kode" class="form-control" value="{{ c['kode'] }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-semibold">Nama Kriteria</label>
+                                            <input type="text" name="nama" class="form-control" value="{{ c['nama'] }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-semibold">Deskripsi</label>
+                                            <textarea name="deskripsi" class="form-control" rows="3">{{ c['deskripsi'] }}</textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                                        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Hapus Kriteria -->
+                    <div class="modal fade" id="modalHapusKriteria{{ c['id'] }}" tabindex="-1">
+                        <div class="modal-dialog modal-sm">
+                            <div class="modal-content">
+                                <form method="POST" action="{{ url_for('kriteria_delete', c_id=c['id']) }}">
+                                    <div class="modal-header bg-danger text-white">
+                                        <h6 class="modal-title fw-bold">Hapus Kriteria</h6>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p class="small mb-0">Apakah Anda yakin ingin menghapus kriteria <strong>{{ c['kode'] }} - {{ c['nama'] }}</strong>? Seluruh perbandingan terkait akan direset.</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Batal</button>
+                                        <button type="submit" class="btn btn-danger btn-sm">Ya, Hapus</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-3 d-block mb-1"></i>
+                            Belum ada kriteria. Klik tombol "Tambah Kriteria" untuk membuat kriteria baru.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tambah Kriteria -->
+<div class="modal fade" id="modalTambahKriteria" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('kriteria_create') }}">
+                <div class="modal-header">
+                    <h6 class="modal-title fw-bold"><i class="bi bi-plus-circle me-1 text-primary"></i> Tambah Kriteria Baru</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Kode Kriteria</label>
+                        <input type="text" name="kode" class="form-control" placeholder="Contoh: C1, C2, dst." value="C{{ criteria|length + 1 }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Nama Kriteria</label>
+                        <input type="text" name="nama" class="form-control" placeholder="Contoh: Prestasi Kerja, Kedisiplinan, dll." required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Deskripsi</label>
+                        <textarea name="deskripsi" class="form-control" rows="3" placeholder="Penjelasan atau indikator penilaian kriteria..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i> Simpan Kriteria</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

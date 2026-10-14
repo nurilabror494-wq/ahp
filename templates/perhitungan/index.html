@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+
+{% block title %}Proses Perhitungan AHP - SPK AHP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h4 class="fw-bold mb-1 text-dark"><i class="bi bi-calculator text-primary me-2"></i> Proses Perhitungan Matematis AHP</h4>
+            <p class="text-muted small mb-0">Rincian tahapan normalisasi matriks, vektor eigen bobot, dan uji rasio konsistensi Saaty (CR)</p>
+        </div>
+        <div>
+            <a href="{{ url_for('perangkingan_index') }}" class="btn btn-success btn-sm">
+                <i class="bi bi-trophy me-1"></i> Lihat Hasil Perangkingan
+            </a>
+            <a href="{{ url_for('laporan_excel') }}" class="btn btn-outline-success btn-sm">
+                <i class="bi bi-file-earmark-excel me-1"></i> Ekspor Excel
+            </a>
+        </div>
+    </div>
+
+    <!-- TABS NAVIGASI PERHITUNGAN -->
+    <ul class="nav nav-tabs mb-4" id="ahpCalcTabs" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active fw-semibold" id="tab-kriteria-btn" data-bs-toggle="tab" data-bs-target="#tab-kriteria" type="button">
+                <i class="bi bi-list-check me-1 text-primary"></i> 1. Matriks Kriteria & Bobot
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link fw-semibold" id="tab-konsistensi-btn" data-bs-toggle="tab" data-bs-target="#tab-konsistensi" type="button">
+                <i class="bi bi-shield-check me-1 text-success"></i> 2. Uji Konsistensi (λ max, CI, CR)
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link fw-semibold" id="tab-alternatif-btn" data-bs-toggle="tab" data-bs-target="#tab-alternatif" type="button">
+                <i class="bi bi-grid-3x3 me-1 text-info"></i> 3. Matriks Alternatif per Kriteria
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link fw-semibold" id="tab-sintesis-btn" data-bs-toggle="tab" data-bs-target="#tab-sintesis" type="button">
+                <i class="bi bi-table me-1 text-warning"></i> 4. Sintesis Akhir Perkalian Bobot
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="ahpCalcTabsContent">
+        <!-- ================= TAB 1: KRITERIA & NORMALISASI ================= -->
+        <div class="tab-pane fade show active" id="tab-kriteria" role="tabpanel">
+            {% if calc['criteria_ahp'] and calc['criteria_ahp']['items'] %}
+                {% set c_ahp = calc['criteria_ahp'] %}
+                <!-- 1. Matriks Perbandingan Awal -->
+                <div class="card card-custom mb-4">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0 fw-bold"><i class="bi bi-grid me-2 text-primary"></i> 1.1. Matriks Perbandingan Berpasangan Kriteria (Matrix A)</h6>
+                        <small class="text-muted">Nilai penilaian perbandingan langsung skala 1–9 dan nilai resiprokal (1/x)</small>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm text-center align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-start">Kriteria Penilaian</th>
+                                    {% for it in c_ahp['items'] %}
+                                    <th>{{ it['kode'] }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in c_ahp['matrix'] %}
+                                {% set i = loop.index0 %}
+                                <tr>
+                                    <th class="table-light text-start">{{ c_ahp['items'][i]['kode'] }} - {{ c_ahp['items'][i]['nama'] }}</th>
+                                    {% for val in row %}
+                                    {% set j = loop.index0 %}
+                                    <td {% if i == j %}class="table-primary fw-bold text-primary"{% endif %}>
+                                        {{ val|round(4) }}
+                                    </td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="table-light fw-bold">
+                                <tr>
+                                    <th class="text-start">Jumlah Kolom (&Sigma;)</th>
+                                    {% for col_sum in c_ahp['col_sums'] %}
+                                    <td class="text-primary font-monospace">{{ col_sum|round(4) }}</td>
+                                    {% endfor %}
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 2. Matriks Normalisasi & Bobot Prioritas -->
+                <div class="card card-custom mb-4">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0 fw-bold"><i class="bi bi-percent me-2 text-primary"></i> 1.2. Matriks Normalisasi & Bobot Prioritas (Vektor Eigen)</h6>
+                        <small class="text-muted">Setiap elemen dibagi jumlah kolomnya. Bobot (W) adalah nilai rata-rata dari setiap baris normalisasi.</small>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm text-center align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-start">Kriteria</th>
+                                    {% for it in c_ahp['items'] %}
+                                    <th>{{ it['kode'] }}</th>
+                                    {% endfor %}
+                                    <th class="bg-primary text-white">Bobot Prioritas (W)</th>
+                                    <th class="bg-primary text-white">Persentase</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in c_ahp['norm_matrix'] %}
+                                {% set i = loop.index0 %}
+                                <tr>
+                                    <th class="table-light text-start">{{ c_ahp['items'][i]['kode'] }} - {{ c_ahp['items'][i]['nama'] }}</th>
+                                    {% for val in row %}
+                                    <td>{{ val|round(4) }}</td>
+                                    {% endfor %}
+                                    <td class="fw-bold font-monospace bg-primary-subtle text-primary">
+                                        {{ c_ahp['weights_list'][i]['bobot']|round(4) }}
+                                    </td>
+                                    <td class="fw-bold text-primary">
+                                        {{ c_ahp['weights_list'][i]['persentase'] }}%
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="table-light fw-bold">
+                                <tr>
+                                    <th class="text-start">Total Penjumlahan</th>
+                                    {% for it in c_ahp['items'] %}
+                                    <td>1.0000</td>
+                                    {% endfor %}
+                                    <td class="bg-primary-subtle text-primary">1.0000</td>
+                                    <td class="text-primary">100%</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-warning">Belum ada kriteria yang dimasukkan.</div>
+            {% endif %}
+        </div>
+
+        <!-- ================= TAB 2: UJI KONSISTENSI ================= -->
+        <div class="tab-pane fade" id="tab-konsistensi" role="tabpanel">
+            {% if calc['criteria_ahp'] %}
+                {% set c_ahp = calc['criteria_ahp'] %}
+                <div class="row g-4">
+                    <!-- Penjelasan Formula Matematis -->
+                    <div class="col-lg-7">
+                        <div class="card card-custom">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0 fw-bold"><i class="bi bi-calculator-fill me-2 text-success"></i> Tabel Perkalian Matriks dan Rasio Vektor (t)</h6>
+                                <small class="text-muted">Menghitung (A &times; W) dan rasio t = (A &times; W) / W untuk mendapatkan &lambda; max</small>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-sm text-center align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="text-start">Kriteria</th>
+                                            <th>Bobot (W)</th>
+                                            <th>(A &times; W)</th>
+                                            <th>Rasio t = (A &times; W) / W</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for it in c_ahp['items'] %}
+                                        {% set i = loop.index0 %}
+                                        <tr>
+                                            <th class="table-light text-start">{{ it['kode'] }} - {{ it['nama'] }}</th>
+                                            <td class="font-monospace">{{ c_ahp['weights_list'][i]['bobot']|round(4) }}</td>
+                                            <td class="font-monospace">{{ c_ahp['weighted_sum'][i]|round(4) }}</td>
+                                            <td class="font-monospace fw-bold">{{ c_ahp['ratio_vector'][i]|round(4) }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot class="table-light fw-bold">
+                                        <tr>
+                                            <th colspan="3" class="text-end">Nilai Rata-rata (&lambda; max):</th>
+                                            <td class="text-primary font-monospace">{{ c_ahp['lambda_max'] }}</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Parameter Konsistensi Card -->
+                    <div class="col-lg-5">
+                        <div class="card card-custom">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0 fw-bold"><i class="bi bi-shield-check me-2 text-success"></i> Indikator Uji Konsistensi Saaty</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3 d-flex justify-content-between border-bottom pb-2">
+                                    <span class="text-muted">Jumlah Kriteria (n):</span>
+                                    <strong class="font-monospace">{{ c_ahp['n'] }}</strong>
+                                </div>
+                                <div class="mb-3 d-flex justify-content-between border-bottom pb-2">
+                                    <span class="text-muted">Lambda Maksimum (&lambda; max):</span>
+                                    <strong class="font-monospace text-primary">{{ c_ahp['lambda_max'] }}</strong>
+                                </div>
+                                <div class="mb-3 d-flex justify-content-between border-bottom pb-2">
+                                    <span class="text-muted">Consistency Index (CI):</span>
+                                    <div>
+                                        <strong class="font-monospace">{{ c_ahp['ci'] }}</strong>
+                                        <small class="d-block text-muted text-end" style="font-size: 0.7rem;">CI = (&lambda;max - n) / (n - 1)</small>
+                                    </div>
+                                </div>
+                                <div class="mb-3 d-flex justify-content-between border-bottom pb-2">
+                                    <span class="text-muted">Random Index Saaty (RI):</span>
+                                    <strong class="font-monospace">{{ c_ahp['ri'] }}</strong>
+                                </div>
+                                <div class="mb-3 d-flex justify-content-between border-bottom pb-2">
+                                    <span class="text-muted">Consistency Ratio (CR):</span>
+                                    <div>
+                                        <strong class="font-monospace text-dark fs-5">{{ c_ahp['cr'] }}</strong>
+                                        <span class="badge bg-secondary ms-1">{{ c_ahp['cr_percentage'] }}%</span>
+                                        <small class="d-block text-muted text-end" style="font-size: 0.7rem;">CR = CI / RI</small>
+                                    </div>
+                                </div>
+
+                                <div class="p-3 rounded {% if c_ahp['is_consistent'] %}bg-success-subtle text-success-emphasis border border-success{% else %}bg-danger-subtle text-danger-emphasis border border-danger{% endif %} text-center mt-3">
+                                    <div class="fw-bold mb-1">
+                                        {% if c_ahp['is_consistent'] %}
+                                            <i class="bi bi-check-circle-fill fs-5 me-1"></i> MATRIKS KONSISTEN (VALID)
+                                        {% else %}
+                                            <i class="bi bi-exclamation-triangle-fill fs-5 me-1"></i> MATRIKS TIDAK KONSISTEN
+                                        {% endif %}
+                                    </div>
+                                    <small>
+                                        {% if c_ahp['is_consistent'] %}
+                                            Karena nilai CR ({{ c_ahp['cr'] }}) &le; 0.10, perbandingan ini memenuhi syarat konsistensi AHP dan dapat digunakan untuk pengambilan keputusan.
+                                        {% else %}
+                                            Nilai CR ({{ c_ahp['cr'] }}) melebihi batas toleransi 0.10 (10%). Disarankan untuk mengevaluasi dan memperbaiki kembali nilai perbandingan berpasangan.
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- ================= TAB 3: MATRIKS ALTERNATIF ================= -->
+        <div class="tab-pane fade" id="tab-alternatif" role="tabpanel">
+            {% for crit in calc['criteria'] %}
+                {% set cid = crit['id'] %}
+                {% set alt_ahp = calc['alt_ahp_by_criteria'].get(cid) %}
+                <div class="card card-custom mb-4">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0 fw-bold text-dark">
+                                Matriks Perbandingan Alternatif untuk Kriteria: <span class="text-primary">[{{ crit['kode'] }}] {{ crit['nama'] }}</span>
+                            </h6>
+                        </div>
+                        <div>
+                            {% if alt_ahp and alt_ahp['is_consistent'] %}
+                                <span class="badge-consistent"><i class="bi bi-check-circle-fill"></i> Konsisten (CR = {{ alt_ahp['cr'] }})</span>
+                            {% elif alt_ahp %}
+                                <span class="badge-inconsistent"><i class="bi bi-exclamation-triangle-fill"></i> Tidak Konsisten (CR = {{ alt_ahp['cr'] }})</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if alt_ahp and alt_ahp['matrix'] %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm text-center align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-start">Alternatif</th>
+                                    {% for a in calc['alternatives'] %}
+                                    <th>{{ a['kode'] }}</th>
+                                    {% endfor %}
+                                    <th class="bg-primary text-white">Bobot Lokal (W)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in alt_ahp['matrix'] %}
+                                {% set i = loop.index0 %}
+                                <tr>
+                                    <th class="table-light text-start">{{ calc['alternatives'][i]['kode'] }} - {{ calc['alternatives'][i]['nama'] }}</th>
+                                    {% for val in row %}
+                                    {% set j = loop.index0 %}
+                                    <td {% if i == j %}class="table-light fw-bold"{% endif %}>
+                                        {{ val|round(4) }}
+                                    </td>
+                                    {% endfor %}
+                                    <td class="fw-bold font-monospace bg-primary-subtle text-primary">
+                                        {{ alt_ahp['weights_list'][i]['bobot']|round(4) }} ({{ alt_ahp['weights_list'][i]['persentase'] }}%)
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="p-3 text-muted">Belum ada data perbandingan alternatif untuk kriteria ini.</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- ================= TAB 4: SINTESIS AKHIR ================= -->
+        <div class="tab-pane fade" id="tab-sintesis" role="tabpanel">
+            <div class="card card-custom mb-4">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-table me-2 text-warning"></i> Matriks Bobot Gabungan dan Sintesis Akhir</h6>
+                    <small class="text-muted">Skor Akhir didapatkan dari penjumlahan perkalian bobot lokal alternatif dengan bobot kriteria: &Sigma;(W_alt &times; W_kriteria)</small>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm text-center align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-start" rowspan="2">Alternatif / Kandidat</th>
+                                <th colspan="{{ calc['criteria']|length }}">Bobot Kriteria (W Kriteria)</th>
+                                <th rowspan="2" class="bg-success text-white">Skor Akhir</th>
+                                <th rowspan="2" class="bg-success text-white">Peringkat</th>
+                            </tr>
+                            <tr>
+                                {% for c in calc['criteria'] %}
+                                <th class="bg-primary-subtle text-primary">
+                                    {{ c['kode'] }}<br>
+                                    <small class="text-muted font-monospace">
+                                        ({{ calc['criteria_ahp']['weights'].get(c['id'], 0)|round(3) }})
+                                    </small>
+                                </th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for alt in calc['final_rankings'] %}
+                            <tr {% if alt['ranking'] == 1 %}class="table-warning bg-opacity-25"{% endif %}>
+                                <th class="table-light text-start">{{ alt['kode'] }} - {{ alt['nama'] }}</th>
+                                {% for c in calc['criteria'] %}
+                                {% set cid = c['id'] %}
+                                {% set bdown = alt['breakdown'].get(cid, {}) %}
+                                <td class="font-monospace">
+                                    {{ bdown.get('local_weight', 0)|round(4) }}
+                                </td>
+                                {% endfor %}
+                                <td class="fw-bold font-monospace bg-success-subtle text-success fs-6">
+                                    {{ alt['skor_akhir'] }}
+                                </td>
+                                <td>
+                                    {% if alt['ranking'] == 1 %}
+                                        <span class="badge-medal-1"><i class="bi bi-trophy-fill"></i> 1</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">#{{ alt['ranking'] }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

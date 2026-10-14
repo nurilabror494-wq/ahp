@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Struktur Hierarki AHP - SPK AHP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-1 text-dark"><i class="bi bi-diagram-2 text-primary me-2"></i> Struktur Hierarki Keputusan AHP</h4>
+            <p class="text-muted small mb-0">Visualisasi 3 level dekomposisi masalah: <strong>Tujuan (Goal) &rarr; Kriteria &rarr; Alternatif</strong></p>
+        </div>
+        <div>
+            <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+                <i class="bi bi-printer me-1"></i> Cetak Diagram
+            </button>
+        </div>
+    </div>
+
+    <div class="card card-custom">
+        <div class="card-header bg-light">
+            <h6 class="mb-0 fw-bold"><i class="bi bi-diagram-3 me-2 text-primary"></i> Pohon Hierarki Analytical Hierarchy Process</h6>
+        </div>
+        <div class="card-body p-4">
+            <div class="hierarchy-tree">
+                <!-- LEVEL 1: GOAL / TUJUAN -->
+                <div class="text-center w-100">
+                    <span class="badge bg-primary text-uppercase mb-2 px-3 py-1">Level 1: Fokus / Tujuan (Goal)</span>
+                    <div class="tree-level">
+                        <div class="tree-node goal-node shadow-sm">
+                            <i class="bi bi-bullseye fs-3 mb-1 d-block"></i>
+                            <h6 class="fw-bold mb-1">{{ decision['nama_keputusan'] }}</h6>
+                            <small class="opacity-75 d-block" style="font-size: 0.8rem;">{{ decision['tujuan'] }}</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tree-connector-down"></div>
+
+                <!-- LEVEL 2: KRITERIA -->
+                <div class="text-center w-100">
+                    <span class="badge bg-info text-dark text-uppercase mb-3 px-3 py-1">Level 2: Kriteria Penilaian ({{ calc['criteria']|length }} Kriteria)</span>
+                    <div class="tree-level">
+                        {% if calc['criteria_ahp'] and calc['criteria_ahp']['weights_list'] %}
+                            {% for item in calc['criteria_ahp']['weights_list'] %}
+                            <div class="tree-node criterion-node">
+                                <span class="badge bg-primary mb-2">{{ item['kode'] }}</span>
+                                <h6 class="fw-bold mb-1 text-dark" style="font-size: 0.95rem;">{{ item['nama'] }}</h6>
+                                <div class="mt-2 pt-2 border-top">
+                                    <small class="text-muted d-block">Bobot Prioritas:</small>
+                                    <span class="fw-bold text-primary">{{ item['persentase'] }}%</span>
+                                    <span class="small text-muted font-monospace">({{ item['bobot']|round(4) }})</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-muted">Belum ada kriteria yang dimasukkan.</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="tree-connector-down"></div>
+
+                <!-- LEVEL 3: ALTERNATIF -->
+                <div class="text-center w-100">
+                    <span class="badge bg-success text-uppercase mb-3 px-3 py-1">Level 3: Alternatif / Kandidat ({{ calc['alternatives']|length }} Pilihan)</span>
+                    <div class="tree-level">
+                        {% if calc['final_rankings'] %}
+                            {% for alt in calc['final_rankings'] %}
+                            <div class="tree-node alternative-node {% if alt['ranking'] == 1 %}border-success shadow{% endif %}">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge bg-secondary">{{ alt['kode'] }}</span>
+                                    {% if alt['ranking'] == 1 %}
+                                        <span class="badge-medal-1"><i class="bi bi-trophy-fill"></i> Rank 1</span>
+                                    {% else %}
+                                        <span class="badge bg-light text-dark border">Rank {{ alt['ranking'] }}</span>
+                                    {% endif %}
+                                </div>
+                                <h6 class="fw-bold mb-1 text-dark" style="font-size: 0.95rem;">{{ alt['nama'] }}</h6>
+                                <p class="text-muted small mb-2 text-truncate" style="font-size: 0.78rem;">{{ alt['deskripsi'] or '-' }}</p>
+                                <div class="mt-2 pt-2 border-top bg-light rounded p-1">
+                                    <small class="text-muted d-block" style="font-size: 0.75rem;">Skor Akhir AHP:</small>
+                                    <strong class="text-success">{{ alt['skor_akhir'] }}</strong>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-muted">Belum ada alternatif yang dinilai.</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

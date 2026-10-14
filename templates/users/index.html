@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Manajemen Pengguna - SPK AHP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h4 class="fw-bold mb-1 text-dark"><i class="bi bi-shield-lock text-primary me-2"></i> Manajemen Akun Pengguna</h4>
+            <p class="text-muted small mb-0">Kelola hak akses pengguna, administrator, dan pengaturan login</p>
+        </div>
+        <div>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahUser">
+                <i class="bi bi-person-plus me-1"></i> Tambah Pengguna
+            </button>
+        </div>
+    </div>
+
+    <div class="card card-custom">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold">Daftar Akun Terdaftar</h6>
+            <span class="badge bg-secondary">{{ users|length }} Pengguna</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-custom align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">No</th>
+                        <th>Nama Pengguna</th>
+                        <th>Alamat Email</th>
+                        <th style="width: 140px;">Role / Hak Akses</th>
+                        <th style="width: 160px;">Terdaftar</th>
+                        <th style="width: 140px;" class="text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="rounded-circle bg-light border text-primary d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px;">
+                                    {{ u['nama'][0]|upper }}
+                                </div>
+                                <span class="fw-semibold">{{ u['nama'] }}</span>
+                            </div>
+                        </td>
+                        <td>{{ u['email'] }}</td>
+                        <td>
+                            {% if u['role'] == 'admin' %}
+                                <span class="badge bg-danger text-uppercase">Administrator</span>
+                            {% else %}
+                                <span class="badge bg-secondary text-uppercase">Pengguna Biasa</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted small">{{ u['created_at'][:10] if u['created_at'] else '-' }}</td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-sm btn-outline-secondary me-1" 
+                                    data-bs-toggle="modal" data-bs-target="#modalEditUser{{ u['id'] }}" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            {% if u['id'] != session.get('user_id') %}
+                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                    data-bs-toggle="modal" data-bs-target="#modalHapusUser{{ u['id'] }}" title="Hapus">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                    <!-- Modal Edit User -->
+                    <div class="modal fade" id="modalEditUser{{ u['id'] }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form method="POST" action="{{ url_for('users_edit', u_id=u['id']) }}">
+                                    <div class="modal-header">
+                                        <h6 class="modal-title fw-bold">Edit Akun [{{ u['nama'] }}]</h6>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-semibold">Nama Lengkap</label>
+                                            <input type="text" name="nama" class="form-control" value="{{ u['nama'] }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-semibold">Email</label>
+                                            <input type="email" name="email" class="form-control" value="{{ u['email'] }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-semibold">Hak Akses (Role)</label>
+                                            <select name="role" class="form-select">
+                                                <option value="pengguna" {% if u['role'] == 'pengguna' %}selected{% endif %}>Pengguna (Viewer / Evaluator)</option>
+                                                <option value="admin" {% if u['role'] == 'admin' %}selected{% endif %}>Administrator (Full Access)</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-semibold">Reset Password (Opsional)</label>
+                                            <input type="password" name="new_password" class="form-control" placeholder="Kosongkan jika password tidak diubah">
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                                        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Hapus User -->
+                    <div class="modal fade" id="modalHapusUser{{ u['id'] }}" tabindex="-1">
+                        <div class="modal-dialog modal-sm">
+                            <div class="modal-content">
+                                <form method="POST" action="{{ url_for('users_delete', u_id=u['id']) }}">
+                                    <div class="modal-header bg-danger text-white">
+                                        <h6 class="modal-title fw-bold">Hapus Akun</h6>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p class="small mb-0">Hapus pengguna <strong>{{ u['nama'] }}</strong> ({{ u['email'] }})?</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Batal</button>
+                                        <button type="submit" class="btn btn-danger btn-sm">Ya, Hapus</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tambah User -->
+<div class="modal fade" id="modalTambahUser" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('users_create') }}">
+                <div class="modal-header">
+                    <h6 class="modal-title fw-bold"><i class="bi bi-person-plus me-1 text-primary"></i> Tambah Pengguna Baru</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Nama Lengkap</label>
+                        <input type="text" name="nama" class="form-control" placeholder="Nama pengguna..." required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Alamat Email</label>
+                        <input type="email" name="email" class="form-control" placeholder="email@domain.com" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Password</label>
+                        <input type="password" name="password" class="form-control" placeholder="Password akun..." required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Hak Akses (Role)</label>
+                        <select name="role" class="form-select">
+                            <option value="pengguna">Pengguna Biasa (User / Evaluator)</option>
+                            <option value="admin">Administrator (Full Control)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i> Daftarkan Pengguna</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

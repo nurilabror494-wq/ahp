@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Manajemen Alternatif - SPK AHP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h4 class="fw-bold mb-1 text-dark"><i class="bi bi-people text-success me-2"></i> Manajemen Alternatif</h4>
+            <p class="text-muted small mb-0">Kelola daftar pilihan atau kandidat yang akan dinilai untuk studi kasus: <strong>{{ active_decision['nama_keputusan'] }}</strong></p>
+        </div>
+        <div>
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalTambahAlternatif">
+                <i class="bi bi-plus-lg me-1"></i> Tambah Alternatif
+            </button>
+        </div>
+    </div>
+
+    <!-- Tabel Alternatif -->
+    <div class="card card-custom">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold">Daftar Pilihan Alternatif / Kandidat</h6>
+            <span class="badge bg-secondary">{{ alternatives|length }} Alternatif Terdaftar</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-custom align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;">Rank</th>
+                        <th style="width: 120px;">Kode</th>
+                        <th>Nama Alternatif / Kandidat</th>
+                        <th>Deskripsi / Profil Singkat</th>
+                        <th style="width: 140px;" class="text-end">Skor Akhir</th>
+                        <th style="width: 140px;" class="text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in alternatives %}
+                    <tr {% if a['ranking'] == 1 %}class="table-warning bg-opacity-25"{% endif %}>
+                        <td>
+                            {% if a['ranking'] == 1 %}
+                                <span class="badge-medal-1"><i class="bi bi-trophy-fill"></i> 1</span>
+                            {% elif a['ranking'] > 1 %}
+                                <span class="badge bg-secondary">#{{ a['ranking'] }}</span>
+                            {% else %}
+                                <span class="badge bg-light text-dark border">-</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-light text-dark border fw-bold px-2 py-1">{{ a['kode'] }}</span></td>
+                        <td class="fw-bold text-dark">{{ a['nama'] }}</td>
+                        <td class="text-muted small">{{ a['deskripsi'] or '-' }}</td>
+                        <td class="text-end font-monospace fw-bold text-success">
+                            {{ (a['skor_akhir'] or 0)|round(4) }}
+                        </td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-sm btn-outline-secondary me-1" 
+                                    data-bs-toggle="modal" data-bs-target="#modalEditAlt{{ a['id'] }}" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                    data-bs-toggle="modal" data-bs-target="#modalHapusAlt{{ a['id'] }}" title="Hapus">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- Modal Edit Alternatif -->
+                    <div class="modal fade" id="modalEditAlt{{ a['id'] }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form method="POST" action="{{ url_for('alternatif_edit', a_id=a['id']) }}">
+                                    <div class="modal-header">
+                                        <h6 class="modal-title fw-bold">Edit Alternatif [{{ a['kode'] }}]</h6>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-semibold">Kode Alternatif</label>
+                                            <input type="text" name="kode" class="form-control" value="{{ a['kode'] }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-semibold">Nama Alternatif</label>
+                                            <input type="text" name="nama" class="form-control" value="{{ a['nama'] }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-semibold">Deskripsi</label>
+                                            <textarea name="deskripsi" class="form-control" rows="3">{{ a['deskripsi'] }}</textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                                        <button type="submit" class="btn btn-success">Simpan Perubahan</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Hapus Alternatif -->
+                    <div class="modal fade" id="modalHapusAlt{{ a['id'] }}" tabindex="-1">
+                        <div class="modal-dialog modal-sm">
+                            <div class="modal-content">
+                                <form method="POST" action="{{ url_for('alternatif_delete', a_id=a['id']) }}">
+                                    <div class="modal-header bg-danger text-white">
+                                        <h6 class="modal-title fw-bold">Hapus Alternatif</h6>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p class="small mb-0">Apakah Anda yakin ingin menghapus alternatif <strong>{{ a['kode'] }} - {{ a['nama'] }}</strong>?</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Batal</button>
+                                        <button type="submit" class="btn btn-danger btn-sm">Ya, Hapus</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-3 d-block mb-1"></i>
+                            Belum ada alternatif. Klik tombol "Tambah Alternatif" untuk menambahkan opsi kandidat.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tambah Alternatif -->
+<div class="modal fade" id="modalTambahAlternatif" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('alternatif_create') }}">
+                <div class="modal-header">
+                    <h6 class="modal-title fw-bold"><i class="bi bi-plus-circle me-1 text-success"></i> Tambah Alternatif Baru</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Kode Alternatif</label>
+                        <input type="text" name="kode" class="form-control" placeholder="Contoh: A1, A2, dst." value="A{{ alternatives|length + 1 }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Nama Alternatif / Kandidat</label>
+                        <input type="text" name="nama" class="form-control" placeholder="Contoh: Kandidat Budi, Produk X, Lokasi Y, dll." required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Deskripsi</label>
+                        <textarea name="deskripsi" class="form-control" rows="3" placeholder="Informasi singkat tentang alternatif ini..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success"><i class="bi bi-save me-1"></i> Simpan Alternatif</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

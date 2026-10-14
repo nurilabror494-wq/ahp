@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}Laporan Hasil AHP - SPK AHP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Top Action Toolbar (Hidden in print) -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2 no-print">
+        <div>
+            <h4 class="fw-bold mb-1 text-dark"><i class="bi bi-file-earmark-text text-primary me-2"></i> Laporan Resmi Hasil AHP</h4>
+            <p class="text-muted small mb-0">Dokumentasi hasil perhitungan Analytical Hierarchy Process siap cetak dan ekspor</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button onclick="window.print()" class="btn btn-primary btn-sm">
+                <i class="bi bi-printer me-1"></i> Cetak / Simpan PDF
+            </button>
+            <a href="{{ url_for('laporan_excel') }}" class="btn btn-success btn-sm">
+                <i class="bi bi-file-earmark-excel me-1"></i> Ekspor Excel (.xlsx)
+            </a>
+            <a href="{{ url_for('laporan_csv') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-filetype-csv me-1"></i> Ekspor CSV
+            </a>
+        </div>
+    </div>
+
+    <!-- DOCUMENT CONTAINER FOR PRINT & VIEW -->
+    <div class="card card-custom p-4 p-md-5 bg-white border" id="printableReport">
+        <!-- KOP LAPORAN -->
+        <div class="text-center pb-3 mb-4 border-bottom border-2">
+            <h4 class="fw-bold text-uppercase mb-1 text-dark">Laporan Hasil Sistem Pendukung Keputusan</h4>
+            <h5 class="fw-bold text-primary mb-2">Metode Analytical Hierarchy Process (AHP)</h5>
+            <div class="text-muted small">
+                Studi Kasus: <strong>{{ decision['nama_keputusan'] }}</strong> &bull; Tanggal Dokumen: {{ decision['tanggal'] }}
+            </div>
+        </div>
+
+        <!-- INFORMASI UMUM STUDI KASUS -->
+        <div class="mb-4">
+            <h6 class="fw-bold text-uppercase text-secondary border-bottom pb-1 mb-2" style="font-size: 0.85rem;">
+                I. Informasi Pengambilan Keputusan
+            </h6>
+            <div class="row small g-2">
+                <div class="col-sm-3 text-muted">Judul / Kasus:</div>
+                <div class="col-sm-9 fw-bold">{{ decision['nama_keputusan'] }}</div>
+
+                <div class="col-sm-3 text-muted">Tujuan Evaluasi:</div>
+                <div class="col-sm-9">{{ decision['tujuan'] }}</div>
+
+                <div class="col-sm-3 text-muted">Deskripsi:</div>
+                <div class="col-sm-9">{{ decision['deskripsi'] or '-' }}</div>
+
+                <div class="col-sm-3 text-muted">Pengambil Keputusan:</div>
+                <div class="col-sm-9">{{ session.get('user_name', 'Administrator') }} ({{ session.get('user_role', 'admin')|upper }})</div>
+            </div>
+        </div>
+
+        <!-- HASIL REKOMENDASI TERBAIK -->
+        <div class="mb-4">
+            <h6 class="fw-bold text-uppercase text-secondary border-bottom pb-1 mb-2" style="font-size: 0.85rem;">
+                II. Kesimpulan Rekomendasi Alternatif Terbaik
+            </h6>
+            {% if calc['best_alternative'] %}
+            <div class="p-3 bg-light rounded border border-warning">
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                    <div>
+                        <span class="badge bg-warning text-dark mb-1">Rekomendasi Utama (Peringkat 1)</span>
+                        <h5 class="fw-bold text-dark mb-0">{{ calc['best_alternative']['kode'] }} - {{ calc['best_alternative']['nama'] }}</h5>
+                        <small class="text-muted">{{ calc['best_alternative']['deskripsi'] }}</small>
+                    </div>
+                    <div class="text-end">
+                        <span class="text-muted small d-block">Skor Akhir AHP:</span>
+                        <span class="fw-bold text-success fs-5 font-monospace">{{ calc['best_alternative']['skor_akhir'] }}</span>
+                        <span class="small text-muted d-block">({{ (calc['best_alternative']['skor_akhir'] * 100)|round(2) }}%)</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- BOBOT KRITERIA & KONSISTENSI -->
+        <div class="mb-4">
+            <h6 class="fw-bold text-uppercase text-secondary border-bottom pb-1 mb-2" style="font-size: 0.85rem;">
+                III. Bobot Prioritas Kriteria & Uji Konsistensi
+            </h6>
+            <div class="table-responsive mb-2">
+                <table class="table table-bordered table-sm align-middle small mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 50px;">No</th>
+                            <th style="width: 100px;">Kode</th>
+                            <th>Nama Kriteria</th>
+                            <th style="width: 130px;" class="text-end">Bobot (W)</th>
+                            <th style="width: 120px;" class="text-end">Persentase</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if calc['criteria_ahp'] and calc['criteria_ahp']['weights_list'] %}
+                            {% for item in calc['criteria_ahp']['weights_list'] %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td><span class="fw-bold">{{ item['kode'] }}</span></td>
+                                <td>{{ item['nama'] }}</td>
+                                <td class="text-end font-monospace">{{ item['bobot']|round(4) }}</td>
+                                <td class="text-end fw-bold">{{ item['persentase'] }}%</td>
+                            </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                    <tfoot class="table-light fw-bold">
+                        <tr>
+                            <td colspan="3" class="text-end">Total:</td>
+                            <td class="text-end font-monospace">1.0000</td>
+                            <td class="text-end">100.00%</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Ringkasan Nilai CR -->
+            <div class="row g-2 small border rounded p-2 bg-light">
+                <div class="col-md-3"><strong>&lambda; Maksimum:</strong> {{ calc['criteria_ahp']['lambda_max'] if calc['criteria_ahp'] else '-' }}</div>
+                <div class="col-md-3"><strong>Consistency Index (CI):</strong> {{ calc['criteria_ahp']['ci'] if calc['criteria_ahp'] else '-' }}</div>
+                <div class="col-md-3"><strong>Random Index (RI):</strong> {{ calc['criteria_ahp']['ri'] if calc['criteria_ahp'] else '-' }}</div>
+                <div class="col-md-3">
+                    <strong>Consistency Ratio (CR):</strong> 
+                    <span class="fw-bold {% if calc['criteria_ahp'] and calc['criteria_ahp']['is_consistent'] %}text-success{% else %}text-danger{% endif %}">
+                        {{ calc['criteria_ahp']['cr'] if calc['criteria_ahp'] else '-' }} ({{ calc['criteria_ahp']['status'] if calc['criteria_ahp'] else '-' }})
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABEL HASIL PERANGKINGAN LENGKAP -->
+        <div class="mb-4">
+            <h6 class="fw-bold text-uppercase text-secondary border-bottom pb-1 mb-2" style="font-size: 0.85rem;">
+                IV. Tabel Lengkap Perangkingan Alternatif
+            </h6>
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm align-middle small mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 70px;" class="text-center">Peringkat</th>
+                            <th style="width: 100px;">Kode</th>
+                            <th>Nama Alternatif / Kandidat</th>
+                            <th style="width: 130px;" class="text-end">Skor Akhir AHP</th>
+                            <th style="width: 120px;" class="text-end">Persentase</th>
+                            <th style="width: 160px;" class="text-center">Status Keputusan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for alt in calc['final_rankings'] %}
+                        <tr {% if alt['ranking'] == 1 %}class="table-warning bg-opacity-25 fw-bold"{% endif %}>
+                            <td class="text-center">#{{ alt['ranking'] }}</td>
+                            <td>{{ alt['kode'] }}</td>
+                            <td>{{ alt['nama'] }}</td>
+                            <td class="text-end font-monospace text-success fw-bold">{{ alt['skor_akhir'] }}</td>
+                            <td class="text-end font-monospace">{{ (alt['skor_akhir'] * 100)|round(2) }}%</td>
+                            <td class="text-center">
+                                {% if alt['ranking'] == 1 %}
+                                    Rekomendasi Utama (Terpilih)
+                                {% elif alt['ranking'] == 2 %}
+                                    Prioritas Alternatif Ke-2
+                                {% else %}
+                                    Dipertimbangkan
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TANDA TANGAN / PENGESAHAN -->
+        <div class="mt-5 pt-4">
+            <div class="row text-center small">
+                <div class="col-6">
+                    <p class="mb-5">Mengetahui,<br><strong>Pengambil Keputusan / Manajer</strong></p>
+                    <p class="fw-bold mb-0 text-decoration-underline">( {{ session.get('user_name', '................................') }} )</p>
+                    <span class="text-muted">NIP / ID: .......................................</span>
+                </div>
+                <div class="col-6">
+                    <p class="mb-5">Kota, {{ decision['tanggal'] }}<br><strong>Penyusun Analisis SPK AHP</strong></p>
+                    <p class="fw-bold mb-0 text-decoration-underline">( ..................................................... )</p>
+                    <span class="text-muted">Tim Pengambil Keputusan</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

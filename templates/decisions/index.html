@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Studi Kasus Keputusan - SPK AHP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h4 class="fw-bold mb-1 text-dark"><i class="bi bi-folder2-open text-primary me-2"></i> Studi Kasus Keputusan (Multi-Decision)</h4>
+            <p class="text-muted small mb-0">Kelola berbagai studi kasus pengambilan keputusan AHP (misal: Karyawan Terbaik, Lokasi Usaha, Beasiswa)</p>
+        </div>
+        <div>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahDecision">
+                <i class="bi bi-plus-lg me-1"></i> Tambah Studi Kasus Baru
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {% for d in decisions %}
+        <div class="col-lg-6">
+            <div class="card card-custom h-100 {% if active_decision and active_decision['id'] == d['id'] %}border-primary shadow{% endif %}">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        {% if active_decision and active_decision['id'] == d['id'] %}
+                            <span class="badge bg-primary me-2"><i class="bi bi-check-circle-fill"></i> Kasus Aktif</span>
+                        {% else %}
+                            <span class="badge bg-light text-muted border me-2">Studi Kasus #{{ d['id'] }}</span>
+                        {% endif %}
+                        <span class="text-muted small"><i class="bi bi-calendar3 me-1"></i> {{ d['tanggal'] }}</span>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary me-1" 
+                                data-bs-toggle="modal" data-bs-target="#modalEditDecision{{ d['id'] }}" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        {% if decisions|length > 1 %}
+                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                data-bs-toggle="modal" data-bs-target="#modalHapusDecision{{ d['id'] }}" title="Hapus">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <h5 class="fw-bold text-dark mb-2">{{ d['nama_keputusan'] }}</h5>
+                    <p class="text-muted small mb-3">{{ d['tujuan'] }}</p>
+                    {% if d['deskripsi'] %}
+                    <p class="small text-secondary mb-3">{{ d['deskripsi'] }}</p>
+                    {% endif %}
+
+                    <div class="d-flex gap-3 text-muted small mb-4">
+                        <div><i class="bi bi-list-check text-primary me-1"></i> <strong>{{ d['total_kriteria'] }}</strong> Kriteria</div>
+                        <div><i class="bi bi-people text-success me-1"></i> <strong>{{ d['total_alternatif'] }}</strong> Alternatif</div>
+                        <div><i class="bi bi-person text-secondary me-1"></i> {{ d['pembuat'] or 'Administrator' }}</div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                        {% if active_decision and active_decision['id'] == d['id'] %}
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-speedometer2 me-1"></i> Buka Dashboard Kasus Ini
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('decisions_activate', dec_id=d['id']) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-check2-circle me-1"></i> Jadikan Kasus Aktif
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Edit Decision -->
+        <div class="modal fade" id="modalEditDecision{{ d['id'] }}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="POST" action="{{ url_for('decisions_edit', dec_id=d['id']) }}">
+                        <div class="modal-header">
+                            <h6 class="modal-title fw-bold">Edit Studi Kasus Keputusan</h6>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">Nama / Judul Kasus Keputusan</label>
+                                <input type="text" name="nama_keputusan" class="form-control" value="{{ d['nama_keputusan'] }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">Tujuan Pengambilan Keputusan (Goal)</label>
+                                <textarea name="tujuan" class="form-control" rows="2" required>{{ d['tujuan'] }}</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">Deskripsi / Ruang Lingkup</label>
+                                <textarea name="deskripsi" class="form-control" rows="3">{{ d['deskripsi'] }}</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">Tanggal Keputusan</label>
+                                <input type="date" name="tanggal" class="form-control" value="{{ d['tanggal'] }}">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Hapus Decision -->
+        <div class="modal fade" id="modalHapusDecision{{ d['id'] }}" tabindex="-1">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <form method="POST" action="{{ url_for('decisions_delete', dec_id=d['id']) }}">
+                        <div class="modal-header bg-danger text-white">
+                            <h6 class="modal-title fw-bold">Hapus Studi Kasus</h6>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="small mb-0">Apakah Anda yakin ingin menghapus studi kasus <strong>{{ d['nama_keputusan'] }}</strong>? Seluruh kriteria, alternatif, dan nilai perbandingan di dalamnya akan terhapus permanen.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-danger btn-sm">Ya, Hapus</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal Tambah Decision -->
+<div class="modal fade" id="modalTambahDecision" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('decisions_create') }}">
+                <div class="modal-header">
+                    <h6 class="modal-title fw-bold"><i class="bi bi-plus-circle me-1 text-primary"></i> Buat Studi Kasus Keputusan Baru</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Nama / Judul Kasus Keputusan</label>
+                        <input type="text" name="nama_keputusan" class="form-control" placeholder="Contoh: Pemilihan Lokasi Cabang Baru" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Tujuan Pengambilan Keputusan (Goal)</label>
+                        <textarea name="tujuan" class="form-control" rows="2" placeholder="Contoh: Menentukan lokasi terbaik yang strategis dan bernilai ekonomis tinggi..." required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Deskripsi / Ruang Lingkup (Opsional)</label>
+                        <textarea name="deskripsi" class="form-control" rows="3" placeholder="Informasi tambahan mengenai latar belakang atau studi kasus..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Tanggal</label>
+                        <input type="date" name="tanggal" class="form-control" value="{{ now_year }}-01-01">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i> Buat Studi Kasus</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
